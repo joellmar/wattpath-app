@@ -37,7 +37,8 @@ public class JwtValidatorFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String authorizationHeader = request.getHeader("Authorization");
 
-        if (authorizationHeader != null && !authorizationHeader.startsWith("Bearer ")) {
+        // CRÍTICO: Quitamos la negación (!). Ahora sí validamos que EMPIECE por Bearer
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             try {
                 String jwt = authorizationHeader.substring(7).trim();
                 String secret = storeProperties.jwtSecretKeyValue();
@@ -67,6 +68,7 @@ public class JwtValidatorFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getServletPath().equals("/api/v1/auth/login");
+        // CRÍTICO: Excluir todo el prefijo de auth para no bloquear el registro de usuarios
+        return request.getServletPath().equals("/api/v1/auth/");
     }
 }
