@@ -1,0 +1,36 @@
+<div class="min-h-screen flex items-center justify-center bg-surface-950 p-4 font-sans text-surface-50">
+  <div class="max-w-md w-full bg-surface-900 rounded-2xl p-8 shadow-2xl border border-surface-800">
+    <h2 class="text-3xl font-extrabold text-center mb-2">Acceso al panel</h2>
+    <p class="text-muted-color text-center text-sm mb-6">Introduce tus credenciales para entrar a <span class="text-primary font-bold">Wattium</span></p>
+
+    @if (loginError()) {
+      <div class="mb-4">
+        <p-message severity="error" fluid>{{ loginError() }}</p-message>
+      </div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-semibold text-surface-300">Correo electrónico</label>
+        <input type="email" pInputText formControlName="username" autocomplete="username" class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary" placeholder="correo@empresa.com" />
+        @if (loginForm.controls.username.touched && loginForm.controls.username.invalid) {
+          <small class="text-red-400 text-xs">Introduce un correo electrónico con formato corporativo válido.</small>
+        }
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-semibold text-surface-300">Contraseña de acceso</label>
+        <p-password formControlName="password" [toggleMask]="true" [feedback]="false" autocomplete="current-password" fluid class="[&_input]:bg-surface-800 [&_input]:border-surface-700 [&_input]:text-surface-50 [&_input]:focus:border-primary" placeholder="******"></p-password>
+        @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+          <small class="text-red-400 text-xs">La contraseña es obligatoria para acceder (mínimo 4 caracteres).</small>
+        }
+      </div>
+
+      <p-button type="submit" label="Iniciar sesión" icon="pi pi-sign-in" [loading]="isLoading()" class="bg-primary border-none text-primary-inverse font-bold py-2 rounded-xl transition-colors mt-2" fluid></p-button>
+    </form>
+
+    <div class="mt-6 text-center border-t border-surface-800 pt-4">
+      <a routerLink="/register" class="text-sm text-primary hover:underline font-medium">¿No tienes cuenta aún? Regístrate aquí</a>
+    </div>
+  </div>
+</div>

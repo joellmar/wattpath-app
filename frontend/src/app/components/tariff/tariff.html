@@ -1,0 +1,101 @@
+<div class="min-h-screen bg-surface-950 text-surface-50 p-4 md:p-6 font-sans flex items-center justify-center">
+  <div class="max-w-4xl w-full bg-surface-900 rounded-2xl p-6 md:p-8 shadow-2xl border border-surface-800">
+
+    <div class="mb-6 border-b border-surface-800 pb-4">
+      <h2 class="text-3xl font-black text-surface-50">Configuración de <span class="text-primary">tarifa eléctrica</span></h2>
+      <p class="text-muted-color text-sm mt-1">Establece los costes de potencia y energía para habilitar las métricas de impacto económico de Wattimizer.</p>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="mb-4">
+        <p-message severity="error" fluid>{{ errorMessage() }}</p-message>
+      </div>
+    }
+
+    <form [formGroup]="tariffForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-6">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold text-surface-300">Nombre de la tarifa</label>
+          <input type="text" pInputText formControlName="name" class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary" placeholder="Ej. Contrato energía fábrica" />
+          @if (tariffForm.controls.name.touched && tariffForm.controls.name.invalid) {
+            <small class="text-red-400 text-xs">El nombre de la tarifa es obligatorio.</small>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold text-surface-300">Comercializadora eléctrica</label>
+          <input type="text" pInputText formControlName="energyCompany" class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary" placeholder="Ej. Endesa Energía S.A." />
+          @if (tariffForm.controls.energyCompany.touched && tariffForm.controls.energyCompany.invalid) {
+            <small class="text-red-400 text-xs">Indica la comercializadora de tu contrato.</small>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold text-surface-300">Tipo de acceso de red</label>
+          <p-select [options]="typeOptions" formControlName="type" optionLabel="label" optionValue="value" fluid class="bg-surface-800 border-surface-700 text-surface-50"></p-select>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold text-surface-300">Tipo de mercado contractual</label>
+          <p-select [options]="marketOptions" formControlName="market" optionLabel="label" optionValue="value" fluid class="bg-surface-800 border-surface-700 text-surface-50"></p-select>
+        </div>
+
+        <div class="flex flex-col gap-1 md:col-span-2">
+          <label class="text-sm font-semibold text-surface-300">Potencia máxima contratada (kW)</label>
+          <p-inputNumber formControlName="contractedPowerKw" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0.1" fluid class="[&_input]:bg-surface-800 [&_input]:border-surface-700 [&_input]:text-surface-50 [&_input]:focus:border-primary"></p-inputNumber>
+          @if (tariffForm.controls.contractedPowerKw.touched && tariffForm.controls.contractedPowerKw.invalid) {
+            <small class="text-red-400 text-xs">Introduce un valor válido de potencia.</small>
+          }
+        </div>
+      </div>
+
+      <div class="border-t border-surface-800 pt-4">
+        <h3 class="text-lg font-bold text-surface-200 mb-4 flex items-center gap-2">
+          <i class="pi pi-calendar-times text-primary"></i> Precios por tramos horarios (Energía)
+        </h3>
+
+        <div formArrayName="periods" class="flex flex-col gap-6">
+          @for (period of periods.controls; track $index; let i = $index) {
+            <div [formGroupName]="i" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-surface-900/50 p-5 rounded-xl border border-surface-800 items-start">
+
+              <div class="flex flex-col gap-1 col-span-1 sm:col-span-2 lg:col-span-1">
+                <span class="text-xs font-bold text-surface-400 uppercase">Tramo</span>
+                <input type="text" pInputText formControlName="name" aria-label="nombre del tramo tarifario" class="bg-surface-800 border-surface-700 text-surface-50 font-bold" readonly />
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <span class="text-xs font-bold text-surface-400 uppercase">Precio (€/kWh)</span>
+                <p-inputNumber formControlName="priceKwh" mode="decimal" [minFractionDigits]="4" [maxFractionDigits]="4" [min]="0.0001" fluid class="[&_input]:bg-surface-800 [&_input]:border-surface-700 [&_input]:text-surface-50"></p-inputNumber>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <span class="text-xs font-bold text-surface-400 uppercase">Hora inicio / Fin</span>
+                <div class="flex gap-2 items-center">
+                  <input type="text" pInputText formControlName="startHour" placeholder="00:00:00" class="w-full bg-surface-800 border-surface-700 text-surface-50 text-center p-inputtext-sm" />
+                  <span class="text-surface-500">-</span>
+                  <input type="text" pInputText formControlName="endHour" placeholder="00:00:00" class="w-full bg-surface-800 border-surface-700 text-surface-50 text-center p-inputtext-sm" />
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <span class="text-xs font-bold text-surface-400 uppercase">Mes inicio / Fin</span>
+                <div class="flex gap-2 items-center">
+                  <p-inputNumber formControlName="startMonth" [min]="1" [max]="12" placeholder="Inicio" fluid class="[&_input]:text-center [&_input]:bg-surface-800 [&_input]:border-surface-700 [&_input]:text-surface-50"></p-inputNumber>
+                  <span class="text-surface-500">-</span>
+                  <p-inputNumber formControlName="endMonth" [min]="1" [max]="12" placeholder="Fin" fluid class="[&_input]:text-center [&_input]:bg-surface-800 [&_input]:border-surface-700 [&_input]:text-surface-50"></p-inputNumber>
+                </div>
+              </div>
+
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="flex gap-4 mt-4 justify-end">
+        <p-button type="submit" label="Guardar y activar métricas" icon="pi pi-check-circle" [loading]="isLoading()" class="bg-primary border-none text-primary-inverse font-bold px-6 py-3 rounded-xl transition-colors" fluid></p-button>
+      </div>
+
+    </form>
+  </div>
+</div>

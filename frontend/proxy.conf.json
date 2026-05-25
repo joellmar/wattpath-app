@@ -1,0 +1,17 @@
+{
+  "/api": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "headers": {
+      "Connection": "keep-alive"
+    }
+  },
+  "/ws-iot": {
+    "target": "http://localhost:8080",
+    "ws": true,
+    "secure": false,
+    "logLevel": "debug"
+  }
+}
