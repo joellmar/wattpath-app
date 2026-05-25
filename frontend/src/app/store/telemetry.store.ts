@@ -1,10 +1,13 @@
 import { signalStore, withState, withMethods, withComputed, patchState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { computed, inject } from '@angular/core';
-import { distinctUntilChanged, of, pipe, switchMap, tap, timestamp } from 'rxjs';
+import { delay, distinctUntilChanged, of, pipe, switchMap, tap, timestamp } from 'rxjs';
 import { DeviceService } from '../services/device.service';
 import { WebsocketService } from '../services/websocket.service';
 import { TelemetryState } from '../interfaces/telemetry-state.interface';
+import { HttpClient } from '@angular/common/http';
+import { Device } from '../interfaces/device.interface';
+import { SessionStorageService } from '../services/session-storage.service';
 
 const initialState: TelemetryState = {
   devices: [],
@@ -28,30 +31,40 @@ export const TelemetryStore = signalStore(
   })),
 
   // Métodos para alterar el estado de forma controlada e inmutable
-  withMethods((store, deviceService = inject(DeviceService), wsService = inject(WebsocketService)) => ({
+  withMethods((
+    store,
+    http = inject(HttpClient),
+    wsService = inject(WebsocketService)
+  ) => ({
     setSelectedMac(mac: string | null): void {
       patchState(store, { selectedMac: mac });
     },
 
-    // Cargamos los dispositivos usando un flujo asíncrono
+    // Corregido: Forzamos la resolución asíncrona diferida del token garantizando su lectura post-navegación
     loadDevices: rxMethod<void>(
       pipe(
         tap(() => patchState(store, { isLoadingDevices: true })),
         switchMap(() => {
-          // Usamos el servicio HTTP de dispositivos (adaptado a señal o pipeline)
-          // Nota: Asumimos que deviceService expone un método http tradicional o mapeamos su resource
-          const devicesStream = deviceService.devicesResource
-            ? of(deviceService.devicesResource.value() ?? [])
-            : of([]);
-          return devicesStream;
-        }),
-        tap(devicesList => {
-          const firstMac = devicesList.length > 0 ? devicesList[0].macAddress : null;
-          patchState(store, {
-            devices: devicesList,
-            selectedMac: store.selectedMac() ?? firstMac,
-            isLoadingDevices: false
-          });
+          // CRÍTICO: Añadida la barra inicial para que el interceptor cace la ruta
+          return http.get<Device[]>("/api/v1/devices").pipe(
+            tap({
+              next: (devicesList) => {
+                if (!devicesList) return;
+
+                const firstMac = devicesList.length > 0 ? devicesList[0].macAddress : null;
+                patchState(store, {
+                  devices: devicesList,
+                  selectedMac: store.selectedMac() ?? firstMac,
+                  isLoadingDevices: false
+                });
+              },
+              error: (err) => {
+                // Manejo de errores estricto apagando el loading
+                patchState(store, { isLoadingDevices: false });
+                console.error("No se han podido cargar los dispositivos. Verifica tu sesión o conexión.", err);
+              }
+            })
+          );
         })
       )
     ),
@@ -64,22 +77,24 @@ export const TelemetryStore = signalStore(
           if (!mac) return of(null);
           return wsService.watchReadings(mac).pipe(
             distinctUntilChanged((previous, current) => previous.powerW === current.powerW),
-            tap(reading => {
-              // Actualizamos el histórico del mapa de lecturas de forma inmutable
-              const currentHistory = store.historicalReadings()[mac] ?? { timestamps: [], powerW: [] };
-              const nextTimestamps = [...currentHistory.timestamps, reading.time];
-              const nextPowerW = [...currentHistory.powerW, reading.powerW];
+            tap({
+              next: (reading) => {
+                const currentHistory = store.historicalReadings()[mac] ?? { timestamps: [], powerW: [] };
+                const nextTimestamps = [...currentHistory.timestamps, reading.time];
+                const nextPowerW = [...currentHistory.powerW, reading.powerW];
 
-              const limit = 20;
-              patchState(store, state => ({
-                historicalReadings: {
-                  ...state.historicalReadings,
-                  [mac]: {
-                    timestamps: nextTimestamps.length > limit ? nextTimestamps.slice(1) : nextTimestamps,
-                    powerW: nextPowerW.length > limit ? nextPowerW.slice(1) : nextPowerW,
+                const limit = 20;
+                patchState(store, state => ({
+                  historicalReadings: {
+                    ...state.historicalReadings,
+                    [mac]: {
+                      timestamps: nextTimestamps.length > limit ? nextTimestamps.slice(1) : nextTimestamps,
+                      powerW: nextPowerW.length > limit ? nextPowerW.slice(1) : nextPowerW,
+                    }
                   }
-                }
-              }));
+                }));
+              },
+              error: (err) => console.error("Error en el flujo del WebSocket.", err)
             })
           );
         })
