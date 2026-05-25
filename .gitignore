@@ -27,6 +27,16 @@
 hs_err_pid*
 replay_pid*
 
+# =========================
+# REGLAS PARA INTELLIJ IDEA (Añadir al bloque Java)
+# =========================
+.idea/
+*.iml
+*.iws
+out/
+target/
+build/
+
 
 # =========================
 # REGLAS PARA NODE
@@ -178,25 +188,24 @@ vite.config.ts.timestamp-*
 # =========================
 
 # Angular specific
-/dist/
-/out-tsc/
-/tmp/
-/coverage/
-/e2e/test-output/
-/.angular/
+dist/
+out-tsc/
+tmp/
+coverage/
+e2e/test-output/
 .angular/
 
 # Node modules and dependency files
-/node_modules/
+node_modules/
 # /package-lock.json
 # /yarn.lock
 
 # Environment files
-/.env
+.env
 
 # Angular CLI and build artefacts
-/.angular-cli.json
-/.ng/
+.angular-cli.json
+.ng/
 
 # TypeScript cache
 *.tsbuildinfo
