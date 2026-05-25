@@ -8,14 +8,12 @@ import { Password } from 'primeng/password';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    CommonModule,
     RouterLink,
     InputText,
     Password,
@@ -53,16 +51,12 @@ export default class LoginComponent {
     const credentials: LoginUser = this.loginForm.getRawValue();
 
     this.authService.authentication(credentials).subscribe({
-      next: response => {
+      next: (response) => {
         this.sessionStorageService.saveToken(response.jwt);
-        // Introducemos un micro-retardo macro-tarea para garantizar que el almacenamiento se asiente
-        // antes de disparar la navegación y las subsiguientes peticiones del Guard/Dashboard
-        setTimeout(() => {
-          this.isLoading.set(false);
-          this.router.navigate(["/dashboard"]);
-        }, 50);
+        this.isLoading.set(false);
+        this.router.navigate(["/dashboard"]);
       },
-      error: err => {
+      error: (err) => {
         this.isLoading.set(false);
         this.loginError.set(err.error?.message || "Las credenciales introducidas no son válidas o el servidor no responde.");
       },
