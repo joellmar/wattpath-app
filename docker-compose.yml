@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  timescaledb:
+    image: timescale/timescaledb-ha:pg17
+    container_name: db_iot
+    restart: always
+    environment:
+      POSTGRES_DB: wattimizer_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - iot_net
+
+  mosquitto:
+    image: eclipse-mosquitto:2.1.2
+    container_name: broker_mqtt
+    restart: always
+    ports:
+      - "1883:1883" # para que los enchufes shelly puedan conectarse
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/config/password_file:/mosquitto/config/password_file
+    networks:
+      - iot_net
+
+  backend:
+    build:
+      context: ./backend
+    container_name: spring_backend
+    restart: always
+    environment:
+      # 1. Base de datos
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://timescaledb:5432/wattimizer_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+
+      # 2. MQTT
+      - MQTT_URL=tcp://mosquitto:1883
+      - MQTT_USER=${PROD_MQTT_USER}
+      - MQTT_PASSWORD=${PROD_MQTT_PASSWORD}
+
+      # 3. Seguridad y autorización
+      - JWT_SECRET=${PROD_JWT_SECRET}
+      - ADMIN_KEY=${PROD_ADMIN_KEY}
+    depends_on:
+      - timescaledb
+      - mosquitto
+    networks:
+      - iot_net
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: angular_frontend
+    restart: always
+    networks:
+      - iot_net
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - certbot_www:/var/www/certbot
+      - certbot_conf:/etc/letsencrypt
+    # Reutilizamos el espacio físico que genere el contenedor frontend
+    volumes_from:
+      - frontend
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - iot_net
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot_www:/var/www/certbot
+      - certbot_conf:/etc/letsencrypt
+    # Comando para intentar renovar certificados cada 12 horas
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  iot_net:
+
+volumes:
+  pgdata:
+  certbot_www:
+  certbot_conf:
