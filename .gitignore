@@ -214,3 +214,10 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+
+# =========================
+# REGLAS IoT y MQTT
+# =========================
+
+mosquitto/config/password_file
