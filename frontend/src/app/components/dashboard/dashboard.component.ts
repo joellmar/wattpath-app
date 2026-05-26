@@ -6,6 +6,7 @@ import { TelemetryStore } from '../../store/telemetry.store';
 import { CommonModule } from '@angular/common';
 import { Button } from 'primeng/button';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 const options: Intl.DateTimeFormatOptions = {
     hour: "2-digit",
@@ -30,11 +31,12 @@ export default class DashboardComponent {
   // Inyectamos el almacén global
   readonly store = inject(TelemetryStore);
   private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
 
   // Mapeamos propiedades directas a las del Store
   readonly devices = this.store.devices;
-  // Simulamos la comprobación de tarifa para el flujo UX del MVP.
-  // En el futuro, esto leerá del perfil de usuario del Store.
+
+  // CORRECCIÓN MVP: Ahora es una señal reactiva real que lee del backend
   readonly hasTariff = signal<boolean>(false);
 
   private readonly historicalData = this.store.currentReadings;
@@ -93,6 +95,20 @@ export default class DashboardComponent {
     this.store.loadDevices();
     // Conectamos el consumidor del WebSocket al Signal de la MAC seleccionada
     this.store.connectTelemetry(this.store.selectedMac);
+    this.checkTariffStatus();
+  }
+
+  // Consulta síncrona de tarifas al iniciar para desbloquear estadísticas
+  private checkTariffStatus(): void {
+    this.http.get<any[]>("/api/v1/tariffs").subscribe({
+      next: (tariffs) => {
+        this.hasTariff.set(tariffs && tariffs.length > 0);
+      },
+      error: (err) => {
+        this.hasTariff.set(false);
+        console.error("Fallo al verificar el estado de las tarifas corporativas.", err);
+      }
+    });
   }
 
   navigateToTariffConfig(): void {
