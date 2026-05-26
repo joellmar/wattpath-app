@@ -1,64 +1,108 @@
 <div class="min-h-screen bg-surface-950 text-surface-50 p-6 font-sans">
-
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b border-surface-800 pb-6">
+  <div
+    class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b border-surface-800 pb-6"
+  >
     <div>
-      <h1 class="text-3xl font-black tracking-tight">Panel de <span class="text-primary">telemetría</span></h1>
-      <p class="text-muted-color text-sm mt-1">Empresa conectada: <span class="text-primary font-semibold uppercase">{{ companyName() }}</span></p>
+      <h1 class="text-3xl font-black tracking-tight">
+        Panel de <span class="text-primary">telemetría</span>
+      </h1>
+      <p class="text-muted-color text-sm mt-1">
+        Empresa conectada:
+        <span class="text-primary font-semibold uppercase">{{ companyName() }}</span>
+      </p>
     </div>
 
     <div class="flex items-center gap-3 bg-surface-900 p-3 rounded-xl border border-surface-800">
       <span class="text-sm font-medium text-surface-300">Medidor activo:</span>
-      <p-select [options]="devices()" [(ngModel)]="store.selectedMac" optionLabel="name" optionValue="macAddress" placeholder="Selecciona un medidor" class="w-56 bg-surface-800 border-surface-700 text-surface-50"></p-select>
+      <p-select
+        [options]="devices()"
+        [ngModel]="store.selectedMac()"
+        (onChange)="store.setSelectedMac($event.value)"
+        optionLabel="name"
+        optionValue="macAddress"
+        placeholder="Selecciona un medidor"
+        class="w-56 bg-surface-800 border-surface-700 text-surface-50"
+      ></p-select>
     </div>
   </div>
 
   @if (!hasTariff()) {
-    <div class="mb-8 p-5 bg-amber-950/40 border border-amber-500/50 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-lg">
+    <div
+      class="mb-8 p-5 bg-amber-950/40 border border-amber-500/50 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-lg"
+    >
       <div class="flex gap-3 items-start">
         <i class="pi pi-exclamation-triangle text-amber-500 text-2xl mt-0.5"></i>
         <div>
-          <h4 class="text-amber-400 font-bold text-base">Falta configurar la tarifa eléctrica del negocio</h4>
-          <p class="text-surface-300 text-sm mt-0.5">Las métricas analíticas de gastos estimados (€), penalizaciones de maxímetro e históricos financieros se encuentran bloqueadas hasta que asocies los precios de tus periodos energéticos corporativos.</p>
+          <h4 class="text-amber-400 font-bold text-base">
+            Falta configurar la tarifa eléctrica del negocio
+          </h4>
+          <p class="text-surface-300 text-sm mt-0.5">
+            Las métricas analíticas de gastos estimados (€), penalizaciones de maxímetro e
+            históricos financieros se encuentran bloqueadas hasta que asocies los precios de tus
+            periodos energéticos corporativos.
+          </p>
         </div>
       </div>
-      <p-button label="Configurar tarifa ahora" icon="pi pi-cog" (click)="navigateToTariffConfig()" class="bg-amber-600 border-none text-surface-50 font-bold px-4 py-2 rounded-xl transition-colors shrink-0 shadow-md"></p-button>
+      <p-button
+        label="Configurar tarifa ahora"
+        icon="pi pi-cog"
+        (click)="navigateToTariffConfig()"
+        class="bg-amber-600 border-none text-surface-50 font-bold px-4 py-2 rounded-xl transition-colors shrink-0 shadow-md"
+      ></p-button>
     </div>
   }
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-    <div class="lg:col-span-2 bg-surface-900 border border-surface-800 rounded-2xl p-6 shadow-xl flex flex-col min-h-[400px]">
+    <div
+      class="lg:col-span-2 bg-surface-900 border border-surface-800 rounded-2xl p-6 shadow-xl flex flex-col min-h-[400px]"
+    >
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-bold tracking-tight text-surface-200">Consumo eléctrico activo</h3>
         <span class="flex h-3 w-3 relative">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span
+            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
+          ></span>
           <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
         </span>
       </div>
       <div class="flex-1 min-h-[300px]">
-        <p-chart type="line" [data]="chartData()" [options]="chartOptions" class="h-full w-full"></p-chart>
+        <p-chart
+          type="line"
+          [data]="chartData()"
+          [options]="chartOptions"
+          class="h-full w-full"
+        ></p-chart>
       </div>
     </div>
 
     <div class="flex flex-col gap-6">
       @if (hasTariff()) {
-        <div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 shadow-xl flex items-center gap-4">
-          <div class="p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-400">
+        <div
+          class="bg-surface-900 border border-surface-800 rounded-2xl p-6 shadow-xl flex items-center gap-4"
+        >
+          <div
+            class="p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-400"
+          >
             <i class="pi pi-euro text-2xl"></i>
           </div>
           <div>
-            <p class="text-xs font-semibold uppercase tracking-wider text-muted-color">Gasto diario proyectado</p>
+            <p class="text-xs font-semibold uppercase tracking-wider text-muted-color">
+              Gasto diario proyectado
+            </p>
             <h3 class="text-2xl font-black text-surface-50 mt-1">0,00 €</h3>
           </div>
         </div>
       } @else {
-        <div class="bg-surface-900/40 border border-dashed border-surface-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center flex-1 min-h-[250px]">
+        <div
+          class="bg-surface-900/40 border border-dashed border-surface-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center flex-1 min-h-[250px]"
+        >
           <i class="pi pi-lock text-surface-600 text-3xl mb-3"></i>
           <p class="text-surface-500 text-sm font-medium">Estadísticas de coste bloqueadas</p>
-          <span class="text-surface-600 text-xs mt-1 uppercase">requiere asignación de costes de tramos</span>
+          <span class="text-surface-600 text-xs mt-1 uppercase"
+            >requiere asignación de costes de tramos</span
+          >
         </div>
       }
     </div>
-
   </div>
 </div>
