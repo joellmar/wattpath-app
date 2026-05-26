@@ -2,7 +2,7 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 COPY . .
 # Compila Angular en modo producción
 RUN npm run build --configuration=production
