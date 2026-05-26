@@ -16,6 +16,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: "devices",
+    loadComponent: () => import("./components/devices/devices.component"),
+    canActivate: [authGuard]
+  },
+  {
     path: "dashboard",
     loadComponent: () => import("./components/dashboard/dashboard.component"),
     canActivate: [authGuard]

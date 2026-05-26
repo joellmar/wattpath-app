@@ -28,12 +28,10 @@ public class DeviceService {
 
     @Transactional(readOnly = true)
     public List<DeviceDto> listByUsername(String username) {
-        return this.deviceRepository.findAll()
+        return this.deviceRepository.findByUserUsername(username)
                 .stream()
-                .filter(device -> device.getUser() != null && device.getUser().getUsername().equals(username))
                 .map(deviceDtoMapper::toDto)
                 .toList();
-
     }
 
     @Transactional
@@ -41,6 +39,21 @@ public class DeviceService {
         Device device = deviceDtoMapper.toEntity(dto);
         Device saved = deviceRepository.save(device);
         return deviceDtoMapper.toDto(saved);
+    }
+
+    @Transactional
+    public DeviceDto updateDevice(Long id, DeviceDto dto, String currentUsername) {
+        Device device = deviceRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Dispositivo no encontrado"));
+
+        if (device.getUser() == null || !device.getUser().getUsername().equals(currentUsername)) {
+            throw new IllegalStateException("No tienes permisos para modificar este equipo.");
+        }
+
+        device.setName(dto.name());
+        device.setIsOn(dto.isOn());
+
+        return deviceDtoMapper.toDto(deviceRepository.save(device));
     }
 
     @Transactional(readOnly = true)
@@ -60,18 +73,29 @@ public class DeviceService {
     }
 
     @Transactional
-    public DeviceDto claimDevice(String macAddress, String currentUsername) {
-        Device device = deviceRepository.findByMacAddress(macAddress).orElseThrow(() -> new EntityNotFoundException("No se ha registrado telemetría previa para la MAC: " + macAddress));
+    public DeviceDto claimOrRegisterDevice(String macAddress, String newName, String currentUsername) {
+        UserEntity currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no localizado en sesión: " + currentUsername));
 
-        if (device.getUser() != null && !device.getUser().getUsername().equals("SYSTEM") && !device.getUser().getUsername().equals(currentUsername)) {
-            throw new IllegalStateException("Este dispositivo ya se encuentra vinculado a otra cuenta empresarial corporativa.");
+        Device device = deviceRepository.findByMacAddress(macAddress).orElse(null);
+        if (device == null) {
+            device = new Device();
+            device.setMacAddress(macAddress);
+            device.setName(newName);
+            device.setUser(currentUser);
+            device.setIsOn(true);
+        } else {
+            if (device.getUser() != null && !device.getUser().getUsername().equals("SYSTEM") && !device.getUser().getUsername().equals(currentUsername)) {
+                throw new IllegalStateException("Este dispositivo ya se encuentra vinculado a otra cuenta empresarial.");
+            }
+
+            device.setUser(currentUser);
+            if (newName != null && !newName.trim().isEmpty()) {
+                device.setName(newName);
+            }
         }
 
-        UserEntity currentUser = userRepository.findByUsername(currentUsername).orElseThrow(() -> new UsernameNotFoundException("Usuario no localizado en sesión: " + currentUsername));
-
-        device.setUser(currentUser);
         Device updatedDevice = deviceRepository.save(device);
-
         return deviceDtoMapper.toDto(updatedDevice);
     }
 

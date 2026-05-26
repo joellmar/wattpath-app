@@ -39,20 +39,14 @@ public class DeviceController {
     }
 
     @PostMapping("/claim")
-    public ResponseEntity<DeviceDto> claimDevice(@RequestParam String macAddress, Principal principal) {
-        DeviceDto claimed = deviceService.claimDevice(macAddress, principal.getName());
+    public ResponseEntity<DeviceDto> claimDevice(@RequestBody DeviceDto deviceDto, Principal principal) {
+        DeviceDto claimed = deviceService.claimOrRegisterDevice(deviceDto.macAddress(), deviceDto.name(), principal.getName());
         return ResponseEntity.ok(claimed);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<DeviceDto> updateDevice(@PathVariable Long id, @RequestBody DeviceDto deviceDto, Principal principal) {
-        DeviceDto existing = deviceService.findById(id);
-        if (!existing.username().equals(principal.getName())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        DeviceDto updatedDto = new DeviceDto(id, principal.getName(), deviceDto.name(), deviceDto.macAddress(), deviceDto.isOn());
-        return ResponseEntity.ok(deviceService.save(updatedDto));
+        return ResponseEntity.ok(deviceService.updateDevice(id, deviceDto, principal.getName()));
     }
 
     @DeleteMapping("/{id}")

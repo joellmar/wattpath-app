@@ -10,6 +10,7 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.mqtt.support.MqttHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +22,7 @@ public class DeviceMessageHandler {
     private final TelemetryBroadcaster broadcaster;
     private final ReadingResponseMapper readingResponseMapper;
 
+    @Transactional
     @ServiceActivator(inputChannel = "eventsRpcChannel")
     public void handleEventsRpc(Message<EventsRpc> mqttMessage) {
         EventsRpc payload = mqttMessage.getPayload();
@@ -29,6 +31,7 @@ public class DeviceMessageHandler {
         alertService.checkPowerThreshold(reading);
     }
 
+    @Transactional
     @ServiceActivator(inputChannel = "statusChannel")
     public void handleStatus(Message<Status> mqttMessage) {
         String topic = mqttMessage.getHeaders().get(MqttHeaders.RECEIVED_TOPIC, String.class);
