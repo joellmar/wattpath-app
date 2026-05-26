@@ -1,6 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { InputNumber } from 'primeng/inputnumber';
@@ -24,15 +31,7 @@ interface PeriodFormGroup {
 @Component({
   selector: 'app-tariff',
   standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    CommonModule,
-    InputText,
-    InputNumber,
-    Select,
-    Button,
-    Message
-  ],
+  imports: [ReactiveFormsModule, CommonModule, InputText, InputNumber, Select, Button, Message],
   templateUrl: './tariff.html',
   styleUrl: './tariff.css',
 })
@@ -45,33 +44,41 @@ export default class TariffComponent {
   readonly errorMessage = signal<string | null>(null);
 
   readonly marketOptions = [
-    { label: "Mercado libre", value: "LIBRE" },
-    { label: "Mercado regulado (PVPC)", value: "REGULADO" }
+    { label: 'Mercado libre', value: 'LIBRE' },
+    { label: 'Mercado regulado (PVPC)', value: 'REGULADO' },
   ];
 
   readonly typeOptions = [
-    { label: "Tarifa simple pyme (2.0TD)", value: "2.0TD" },
-    { label: "Tarifa industrial maxímetro (3.0TD)", value: "3.0TD" }
+    { label: 'Tarifa simple pyme (2.0TD)', value: '2.0TD' },
+    { label: 'Tarifa industrial maxímetro (3.0TD)', value: '3.0TD' },
   ];
 
   readonly tariffForm = this.formBuilder.group({
-    name: ["", [Validators.required, Validators.minLength(3)]],
-    type: ["2.0TD", [Validators.required]],
-    market: ["LIBRE", [Validators.required]],
+    name: ['', [Validators.required, Validators.minLength(3)]],
+    type: ['2.0TD', [Validators.required]],
+    market: ['LIBRE', [Validators.required]],
     contractedPowerKw: [15.0, [Validators.required, Validators.min(0.1)]],
-    energyCompany: ["", [Validators.required]],
+    energyCompany: ['', [Validators.required]],
     periods: this.formBuilder.array<FormGroup<PeriodFormGroup>>([
-      this.createPeriodFormGroup("P1 (Punta)", 0.1845, '10:00:00', '14:00:00', 'WEEKDAY', 1, 12),
-      this.createPeriodFormGroup("P2 (Llano)", 0.1212, '08:00:00', '10:00:00', 'WEEKDAY', 1, 12),
-      this.createPeriodFormGroup("P3 (Valle)", 0.0834, '00:00:00', '08:00:00', 'WEEKDAY', 1, 12)
-    ])
+      this.createPeriodFormGroup('P1 (Punta)', 0.1845, '10:00:00', '14:00:00', 'WEEKDAY', 1, 12),
+      this.createPeriodFormGroup('P2 (Llano)', 0.1212, '08:00:00', '10:00:00', 'WEEKDAY', 1, 12),
+      this.createPeriodFormGroup('P3 (Valle)', 0.0834, '00:00:00', '08:00:00', 'WEEKDAY', 1, 12),
+    ]),
   });
 
   get periods(): FormArray<FormGroup<PeriodFormGroup>> {
-    return this.tariffForm.get("periods") as FormArray<FormGroup<PeriodFormGroup>>;
+    return this.tariffForm.get('periods') as FormArray<FormGroup<PeriodFormGroup>>;
   }
 
-  private createPeriodFormGroup(name: string, price: number, start: string, end: string, dayType: string, startMonth: number, endMonth: number): FormGroup<PeriodFormGroup> {
+  private createPeriodFormGroup(
+    name: string,
+    price: number,
+    start: string,
+    end: string,
+    dayType: string,
+    startMonth: number,
+    endMonth: number,
+  ): FormGroup<PeriodFormGroup> {
     return this.formBuilder.group<PeriodFormGroup>({
       id: this.formBuilder.control<number | null>(null),
       name: this.formBuilder.control(name, [Validators.required]),
@@ -98,12 +105,14 @@ export default class TariffComponent {
     this.tariffService.createTariff(payload).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(["/dashboard"]);
+        this.router.navigate(['/dashboard']);
       },
-      error: err => {
+      error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err.error?.message || "Error al guardar la configuración de la tarifa eléctrica.");
-      }
+        this.errorMessage.set(
+          err.error?.message || 'Error al guardar la configuración de la tarifa eléctrica.',
+        );
+      },
     });
   }
 }
