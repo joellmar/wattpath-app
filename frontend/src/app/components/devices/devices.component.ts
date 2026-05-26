@@ -73,7 +73,7 @@ export default class DevicesComponent {
       },
       error: (err) => {
         this.isLoadingSubmit.set(false);
-        this.errorMessage.set(err.error?.message || "Error al intentar al añadir o vincular el dispositivo.");
+        this.errorMessage.set(err.error?.message || "Error al añadir o vincular el dispositivo.");
       }
     });
   }

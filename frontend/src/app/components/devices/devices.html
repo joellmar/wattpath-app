@@ -1,85 +1,96 @@
-<div class="min-h-screen bg-surface-950 text-surface-50 p-4 md:p-6 font-sans flex flex-col gap-6">
+<div class="min-h-screen bg-surface-950 text-surface-50 p-4 md:p-6 font-sans flex flex-col gap-6 text-left">
 
-  <div class="border-b border-surface-800 pb-4 w-full">
-    <h2 class="text-3xl font-black text-surface-50">Gestión de <span class="text-primary">dispositivos IoT</span></h2>
-    <p class="text-muted-color text-sm mt-1">Vincula, monitoriza o elimina los sensores inteligentes de la red de tu empresa.</p>
+  <div class="border-b border-surface-800 pb-4 w-full text-left">
+    <h2 class="text-3xl font-black text-surface-50 text-left">Gestión de <span class="text-primary">dispositivos IoT</span></h2>
+    <p class="text-muted-color text-sm mt-1 text-left">Vincula, monitoriza o elimina los sensores inteligentes de la red de tu empresa.</p>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start w-full">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start w-full text-left">
 
-    <div class="bg-surface-900 rounded-2xl p-6 shadow-2xl border border-surface-800 flex flex-col items-center">
-      <h3 class="text-xl font-bold mb-4 text-surface-100 text-center flex items-center gap-2">
+    <div class="bg-surface-900 rounded-2xl p-6 shadow-2xl border border-surface-800 flex flex-col items-start justify-start w-full text-left">
+      <h3 class="text-xl font-bold mb-4 text-surface-100 flex items-center gap-2 text-left justify-start">
         <i class="pi pi-plus-circle text-primary"></i> Registrar o vincular
       </h3>
 
       @if (errorMessage()) {
-        <div class="mb-4 w-full">
+        <div class="mb-4 w-full text-left [&_.p-message-error]:bg-red-950/60 [&_.p-message-error]:border-red-500/50 [&_.p-message-text]:text-red-200">
           <p-message severity="error" fluid>{{ errorMessage() }}</p-message>
         </div>
       }
 
       @if (successMessage()) {
-        <div class="mb-4 w-full">
+        <div class="mb-4 w-full text-left [&_.p-message-success]:bg-green-950/60 [&_.p-message-success]:border-green-800/50 [&_.p-message-text]:text-green-200">
           <p-message severity="success" fluid>{{ successMessage() }}</p-message>
         </div>
       }
 
-      <form [formGroup]="deviceForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 w-full justify-center">
-        <div class="flex flex-col gap-1 w-full text-center">
-          <label class="text-sm font-semibold text-surface-300">Nombre del equipo</label>
-          <input type="text" pInputText formControlName="name" class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary text-center w-full" placeholder="ej. compresor nave norte" />
+      <form [formGroup]="deviceForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 w-full justify-start text-left">
+        <div class="flex flex-col gap-1 w-full text-left">
+          <label class="text-sm font-semibold text-surface-300 text-left">Nombre del equipo</label>
+          <input type="text" pInputText formControlName="name" class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary text-left w-full" placeholder="ej. compresor nave norte" />
           @if (deviceForm.controls.name.touched && deviceForm.controls.name.invalid) {
-            <small class="text-red-400 text-xs text-center">El nombre del medidor es obligatorio (mínimo 3 caracteres).</small>
+            <small class="text-red-400 text-xs text-left">El nombre del medidor es obligatorio (mínimo 3 caracteres).</small>
           }
         </div>
 
-        <div class="flex flex-col gap-1 w-full text-center">
-          <label class="text-sm font-semibold text-surface-300">Dirección MAC física</label>
-          <input type="text" pInputText formControlName="macAddress" class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary text-center w-full uppercase font-mono" placeholder="9070694d3590" />
+        <div class="flex flex-col gap-1 w-full text-left">
+          <label class="text-sm font-semibold text-surface-300 text-left">Dirección MAC física</label>
+          <input type="text" pInputText formControlName="macAddress" class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary text-left w-full uppercase font-mono" placeholder="9070694d3590" />
           @if (deviceForm.controls.macAddress.touched && deviceForm.controls.macAddress.invalid) {
-            <small class="text-red-400 text-xs text-center">Introduce un formato válido de 12 caracteres hexadecimales sin separadores.</small>
+            <small class="text-red-400 text-xs text-left">Introduce un formato válido de 12 caracteres hexadecimales sin separadores.</small>
           }
         </div>
 
-        <p-button type="submit" label="guardar dispositivo" icon="pi pi-save" [loading]="isLoadingSubmit()" class="uppercase bg-primary border-none text-primary-inverse font-bold py-2 rounded-xl transition-colors mt-2" fluid></p-button>
+        <p-button type="submit" label="guardar dispositivo" icon="pi pi-save" [loading]="isLoadingSubmit()" class="uppercase bg-primary border-none text-primary-inverse font-bold py-2 rounded-xl transition-colors mt-2 text-left justify-start" fluid></p-button>
       </form>
     </div>
 
-    <div class="lg:col-span-2 bg-surface-900 border border-surface-800 rounded-2xl p-6 shadow-xl flex flex-col min-h-[350px]">
-      <h3 class="text-xl font-bold mb-4 text-surface-100 flex items-center gap-2">
+    <div class="lg:col-span-2 bg-surface-900 border border-surface-800 rounded-2xl p-6 shadow-xl flex flex-col min-h-[350px] text-left">
+      <h3 class="text-xl font-bold mb-4 text-surface-100 flex items-center gap-2 text-left">
         <i class="pi pi-list text-primary"></i> Inventario de equipos activos
       </h3>
 
-      <p-table [value]="store.devices()" responsiveLayout="stack" class="w-full">
-        <ng-template pTemplate="header">
-          <tr class="border-b border-surface-700 bg-surface-800/50">
-            <th class="text-surface-300 text-left py-3 px-4 font-semibold text-sm rounded-tl-lg">Nombre del equipo</th>
-            <th class="text-surface-300 text-center py-3 px-4 font-semibold text-sm">Dirección MAC</th>
-            <th class="text-surface-300 text-center py-3 px-4 font-semibold text-sm">Estado</th>
-            <th class="text-surface-300 text-center py-3 px-4 font-semibold text-sm rounded-tr-lg">Operaciones</th>
-          </tr>
-        </ng-template>
+      <div class="w-full overflow-hidden rounded-xl border border-surface-800 bg-surface-900">
+        <p-table [value]="store.devices()" responsiveLayout="stack" class="w-full
+          [&_.p-datatable-table]:bg-surface-900
+          [&_.p-datatable-thead_th]:bg-surface-800/80
+          [&_.p-datatable-thead_th]:text-surface-200
+          [&_.p-datatable-thead_th]:border-surface-700
+          [&_.p-datatable-tbody_tr]:bg-surface-900
+          [&_.p-datatable-tbody_tr]:text-surface-100
+          [&_.p-datatable-tbody_tr]:border-surface-800/60">
+          <ng-template pTemplate="header">
+            <tr>
+              <th class="text-left py-3 px-4 font-semibold text-sm">Nombre del equipo</th>
+              <th class="text-center py-3 px-4 font-semibold text-sm">Dirección MAC</th>
+              <th class="text-center py-3 px-4 font-semibold text-sm">Estado</th>
+              <th class="text-center py-3 px-4 font-semibold text-sm">Operaciones</th>
+            </tr>
+          </ng-template>
 
-        <ng-template pTemplate="body" let-device>
-          <tr class="border-b border-surface-800/80 hover:bg-surface-800/40 transition-colors">
-            <td class="py-4 px-4 text-sm font-medium text-surface-50">{{ device.name || 'sin nombre asignado' }}</td>
-            <td class="text-center py-4 px-4 text-sm text-surface-400 uppercase font-mono">{{ device.macAddress }}</td>
-            <td class="text-center py-4 px-4">
-              <p-badge [value]="device.isOn ? 'activo' : 'cortado'" [severity]="device.isOn ? 'success' : 'danger'" class="uppercase text-[10px] tracking-wider"></p-badge>
-            </td>
-            <td class="text-center py-4 px-4 flex justify-center gap-2">
-              <p-button [icon]="device.isOn ? 'pi pi-power-off' : 'pi pi-bolt'" [severity]="device.isOn ? 'secondary' : 'success'" [rounded]="true" [text]="true" (click)="toggleDeviceStatus(device)" aria-label="conmutar relé"></p-button>
-              <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (click)="onDelete(device.id)" aria-label="eliminar dispositivo"></p-button>
-            </td>
-          </tr>
-        </ng-template>
+          <ng-template pTemplate="body" let-device>
+            <tr class="hover:bg-surface-800/40 transition-colors">
+              <td class="py-4 px-4 text-sm font-medium text-surface-100 text-left">{{ device.name || 'sin nombre asignado' }}</td>
+              <td class="text-center py-4 px-4 text-sm text-surface-400 uppercase font-mono">{{ device.macAddress }}</td>
+              <td class="text-center py-4 px-4">
+                <p-badge [value]="device.isOn ? 'activo' : 'cortado'" [severity]="device.isOn ? 'success' : 'danger'" class="uppercase text-[10px] tracking-wider"></p-badge>
+              </td>
+              <td class="text-center py-4 px-4">
+                <div class="flex items-center justify-center gap-2 w-full mx-auto">
+                  <p-button [icon]="device.isOn ? 'pi pi-power-off' : 'pi pi-bolt'" [severity]="device.isOn ? 'secondary' : 'success'" [rounded]="true" [text]="true" (click)="toggleDeviceStatus(device)" aria-label="conmutar relé" class="flex items-center justify-center"></p-button>
+                  <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (click)="onDelete(device.id)" aria-label="eliminar dispositivo" class="flex items-center justify-center text-red-400 hover:text-red-300"></p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
 
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="4" class="text-center py-12 text-sm text-surface-500 uppercase bg-surface-800/10">no hay ningún medidor iot registrado en esta cuenta</td>
-          </tr>
-        </ng-template>
-      </p-table>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="4" class="text-center py-12 text-sm text-surface-500 uppercase bg-surface-900">No hay ningún dispositivo IoT registrado en esta cuenta</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
     </div>
 
   </div>
