@@ -20,11 +20,13 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /root/wattimizer-app
+            
             # Guardamos las variables de entorno en un archivo .env
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
-            echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
-            
-            git pull origin main
+            echo "PROD_MQTT_USER=${{ secrets.PROD_MQTT_USER }}" >> .env
+            echo "PROD_MQTT_PASSWORD=${{ secrets.PROD_MQTT_PASSWORD }}" >> .env
+            echo "PROD_JWT_SECRET=${{ secrets.PROD_JWT_SECRET }}" >> .env
+            echo "PROD_ADMIN_KEY=${{ secrets.PROD_ADMIN_KEY }}" >> .env
             
             # Reconstruir solo lo que ha cambiado sin tirar el servicio
             docker compose --env-file .env up -d --build
