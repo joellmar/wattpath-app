@@ -15,7 +15,7 @@ services:
       - iot_net
 
   mosquitto:
-    image: eclipse-mosquitto:2.1.2
+    image: eclipse-mosquitto:2.1.2-alpine
     container_name: broker_mqtt
     restart: always
     ports:
