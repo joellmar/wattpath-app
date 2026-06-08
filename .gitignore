@@ -39,6 +39,17 @@ build/
 
 
 # =========================
+# REGLAS PARA VS CODE
+# =========================
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+
+
+# =========================
 # REGLAS PARA NODE
 # =========================
 
@@ -221,3 +232,25 @@ yarn-error.log*
 # =========================
 
 mosquitto/config/password_file
+
+
+# =========================
+# REGLAS CURSOR e IA
+# =========================
+
+.cursor/
+.cursorignore
+AGENTS.md
+CONTEXTO_PROYECTO.md
+PROMPTS_TRABAJO.md
+REGLAS.md
+project-map.md
+José\ Luis\ López\ Martos\ -\ Fase\ 1\ -\ Análisis\ funcional.pdf
+José\ Luis\ López\ Martos\ -\ Fase\ 2\ -\ Diseño\ Técnico.pdf
+
+
+# =========================
+# OTROS
+# =========================
+
+capturas/
