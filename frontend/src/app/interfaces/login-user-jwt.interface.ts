@@ -1,4 +1,4 @@
 export interface LoginUserJwt {
-  statusCode: string;
-  jwt: string;
+	statusCode: string;
+	jwt: string;
 }

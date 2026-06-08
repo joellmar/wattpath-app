@@ -1,7 +1,7 @@
 export interface ReadingResponse {
-  time: number;
-  macAddress: string;
-  powerW: number;
-  energyTotalKwh: number;
-  isOn: boolean;
+	time: number;
+	macAddress: string;
+	powerW: number;
+	energyTotalKwh: number;
+	isOn: boolean;
 }

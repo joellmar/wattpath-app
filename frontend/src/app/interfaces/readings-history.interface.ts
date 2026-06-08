@@ -1,4 +1,4 @@
 export interface ReadingsHistory {
-  timestamps: number[];
-  powerW: number[];
+	timestamps: number[];
+	powerW: number[];
 }

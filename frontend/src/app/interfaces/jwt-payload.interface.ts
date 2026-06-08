@@ -1,5 +1,5 @@
-interface JwtPayload {
-  exp?: number;
-  username?: string;
-  authorities?: string;
+export interface JwtPayload {
+	exp?: number;
+	username?: string;
+	authorities?: string;
 }
