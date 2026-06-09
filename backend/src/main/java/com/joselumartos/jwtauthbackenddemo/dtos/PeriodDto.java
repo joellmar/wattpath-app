@@ -1,22 +1,16 @@
 package com.joselumartos.jwtauthbackenddemo.dtos;
 
-import com.joselumartos.jwtauthbackenddemo.entities.DayType;
 import com.joselumartos.jwtauthbackenddemo.entities.Period;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalTime;
 
 /**
  * DTO for {@link Period}
+ * Solo transporta los datos contractuales del precio: código de periodo y precio €/kWh.
+ * Los campos horarios y estacionales vivían aquí antes; ahora residen en tariff_calendar_slots.
  */
 public record PeriodDto(
         Long id,
-        String name,
-        BigDecimal priceKwh,
-        LocalTime startHour,
-        LocalTime endHour,
-        DayType dayType,
-        Integer startMonth,
-        Integer endMonth
+        String periodCode,
+        BigDecimal priceKwh
 ) { }

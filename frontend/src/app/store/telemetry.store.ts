@@ -8,7 +8,7 @@ import {
 	withState,
 } from "@ngrx/signals";
 import { rxMethod } from "@ngrx/signals/rxjs-interop";
-import { distinctUntilChanged, of, pipe, switchMap, tap } from "rxjs";
+import { distinctUntilChanged, filter, of, pipe, switchMap, tap } from "rxjs";
 import type { Device } from "../interfaces/device.interface";
 import type { TelemetryState } from "../interfaces/telemetry-state.interface";
 import { WebsocketService } from "../services/websocket.service";
@@ -199,9 +199,12 @@ export const TelemetryStore = signalStore(
 					switchMap((mac) => {
 						if (!mac) return of(null);
 						return wsService.watchReadings(mac).pipe(
-							distinctUntilChanged(
-								(previous, current) => previous.powerW === current.powerW,
-							),
+							// Descartamos lecturas con powerW nulo (Shelly apagado o mensaje incompleto)
+							// para evitar gaps en la línea de la gráfica.
+							filter((r) => (r.powerW as number | null | undefined) != null),
+							// Deduplicamos por timestamp exacto: si backend emite desde
+							// statusChannel y eventsRpcChannel al mismo instante, solo pintamos uno.
+							distinctUntilChanged((prev, curr) => prev.time === curr.time),
 							tap({
 								next: (reading) => {
 									const currentHistory = store.historicalReadings()[mac] ?? {

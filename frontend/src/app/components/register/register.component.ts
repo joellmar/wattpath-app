@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, signal } from "@angular/core";
+import { Component, effect, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router, RouterLink } from "@angular/router";
 import { Button } from "primeng/button";
@@ -31,6 +31,14 @@ export default class RegisterComponent {
 
 	readonly errorMessage = signal<string | null>(null);
 	readonly isLoading = signal<boolean>(false);
+
+	private _errorTimer: number | null = null;
+	private readonly _autoDismissError = effect(() => {
+		if (this.errorMessage() !== null) {
+			if (this._errorTimer !== null) clearTimeout(this._errorTimer);
+			this._errorTimer = window.setTimeout(() => this.errorMessage.set(null), 7000);
+		}
+	});
 
 	readonly registerForm = this.formBuilder.group({
 		username: ["", [Validators.required, Validators.email]],

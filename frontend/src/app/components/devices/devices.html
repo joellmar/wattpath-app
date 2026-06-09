@@ -13,13 +13,13 @@
       </h3>
 
       @if (errorMessage()) {
-        <div class="mb-4 w-full text-left [&_.p-message-error]:bg-red-950/60 [&_.p-message-error]:border-red-500/50 [&_.p-message-text]:text-red-200">
+        <div class="mb-4 w-full">
           <p-message severity="error" fluid>{{ errorMessage() }}</p-message>
         </div>
       }
 
       @if (successMessage()) {
-        <div class="mb-4 w-full text-left [&_.p-message-success]:bg-green-950/60 [&_.p-message-success]:border-green-800/50 [&_.p-message-text]:text-green-200">
+        <div class="mb-4 w-full">
           <p-message severity="success" fluid>{{ successMessage() }}</p-message>
         </div>
       }
@@ -50,35 +50,28 @@
         <i class="pi pi-list text-primary"></i> Inventario de equipos activos
       </h3>
 
-      <div class="w-full overflow-hidden rounded-xl border border-surface-800 bg-surface-900">
-        <p-table [value]="store.devices()" responsiveLayout="stack" class="w-full
-          [&_.p-datatable-table]:bg-surface-900
-          [&_.p-datatable-thead_th]:bg-surface-800/80
-          [&_.p-datatable-thead_th]:text-surface-200
-          [&_.p-datatable-thead_th]:border-surface-700
-          [&_.p-datatable-tbody_tr]:bg-surface-900
-          [&_.p-datatable-tbody_tr]:text-surface-100
-          [&_.p-datatable-tbody_tr]:border-surface-800/60">
+      <div class="w-full overflow-hidden rounded-xl border border-surface-800">
+        <p-table [value]="store.devices()" responsiveLayout="stack" class="w-full">
           <ng-template pTemplate="header">
             <tr>
-              <th class="text-left py-3 px-4 font-semibold text-sm">Nombre del equipo</th>
-              <th class="text-center py-3 px-4 font-semibold text-sm">Dirección MAC</th>
-              <th class="text-center py-3 px-4 font-semibold text-sm">Estado</th>
-              <th class="text-center py-3 px-4 font-semibold text-sm">Operaciones</th>
+              <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider text-surface-400 bg-surface-800/60 border-b border-surface-700">Nombre del equipo</th>
+              <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider text-surface-400 bg-surface-800/60 border-b border-surface-700">Dirección MAC</th>
+              <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider text-surface-400 bg-surface-800/60 border-b border-surface-700">Estado</th>
+              <th class="text-right py-3 px-4 text-xs font-bold uppercase tracking-wider text-surface-400 bg-surface-800/60 border-b border-surface-700">Operaciones</th>
             </tr>
           </ng-template>
 
           <ng-template pTemplate="body" let-device>
-            <tr class="hover:bg-surface-800/40 transition-colors">
-              <td class="py-4 px-4 text-sm font-medium text-surface-100 text-left">{{ device.name || 'sin nombre asignado' }}</td>
-              <td class="text-center py-4 px-4 text-sm text-surface-400 uppercase font-mono">{{ device.macAddress }}</td>
-              <td class="text-center py-4 px-4">
+            <tr class="border-b border-surface-800/60 hover:bg-surface-800/40 transition-colors">
+              <td class="py-4 px-4 text-sm font-medium text-surface-100">{{ device.name || 'sin nombre asignado' }}</td>
+              <td class="py-4 px-4 text-sm text-surface-400 uppercase font-mono">{{ device.macAddress }}</td>
+              <td class="py-4 px-4">
                 <p-badge [value]="device.isOn ? 'activo' : 'cortado'" [severity]="device.isOn ? 'success' : 'danger'" class="uppercase text-[10px] tracking-wider"></p-badge>
               </td>
-              <td class="text-center py-4 px-4">
-                <div class="flex items-center justify-center gap-2 w-full mx-auto">
-                  <p-button [icon]="device.isOn ? 'pi pi-power-off' : 'pi pi-bolt'" [severity]="device.isOn ? 'secondary' : 'success'" [rounded]="true" [text]="true" (click)="toggleDeviceStatus(device)" aria-label="conmutar relé" class="flex items-center justify-center"></p-button>
-                  <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (click)="onDelete(device.id)" aria-label="eliminar dispositivo" class="flex items-center justify-center text-red-400 hover:text-red-300"></p-button>
+              <td class="py-4 px-4">
+                <div class="flex items-center justify-end gap-2">
+                  <p-button [icon]="device.isOn ? 'pi pi-power-off' : 'pi pi-bolt'" [severity]="device.isOn ? 'secondary' : 'success'" [rounded]="true" [text]="true" (click)="toggleDeviceStatus(device)" aria-label="conmutar relé"></p-button>
+                  <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (click)="onDelete(device.id)" aria-label="eliminar dispositivo"></p-button>
                 </div>
               </td>
             </tr>
@@ -86,7 +79,7 @@
 
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="4" class="text-center py-12 text-sm text-surface-500 uppercase bg-surface-900">No hay ningún dispositivo IoT registrado en esta cuenta</td>
+              <td colspan="4" class="text-center py-12 text-sm text-surface-500 uppercase">No hay ningún dispositivo IoT registrado en esta cuenta</td>
             </tr>
           </ng-template>
         </p-table>

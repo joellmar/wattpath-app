@@ -1,147 +1,439 @@
-<div class="min-h-screen bg-surface-950 text-surface-50 p-4 md:p-6 font-sans flex items-center justify-center text-left">
-  <div class="max-w-4xl w-full bg-surface-900 rounded-2xl p-6 md:p-8 shadow-2xl border border-surface-800 text-left">
+<div class="min-h-screen bg-surface-950 text-surface-50 p-4 md:p-6 font-sans">
+  <div class="max-w-5xl mx-auto">
 
-    <div class="mb-6 border-b border-surface-800 pb-4 text-left">
-      <h2 class="text-3xl font-black text-surface-50 text-left">Configuración de <span class="text-primary">tarifa eléctrica</span></h2>
-      <p class="text-muted-color text-sm mt-1 text-left">Establece los costes de potencia y energía para habilitar las métricas de impacto económico de Wattimizer.</p>
+    <!-- Cabecera -->
+    <div class="mb-6 border-b border-surface-800 pb-4">
+      <h2 class="text-3xl font-black text-surface-50">
+        Tarifas <span class="text-primary">eléctricas</span>
+      </h2>
+      <p class="text-muted-color text-sm mt-1">
+        @if (isAdmin()) {
+          Gestiona el catálogo de plantillas y configura tu tarifa personal.
+        } @else {
+          Elige una tarifa del catálogo o ajusta los precios de tu contrato para activar las métricas de costes.
+        }
+      </p>
     </div>
 
+    <!-- Mensajes de estado -->
     @if (errorMessage()) {
-      <div class="mb-4 w-full text-left [&_.p-message-error]:bg-red-950/60 [&_.p-message-error]:border-red-500/50 [&_.p-message-text]:text-red-200">
-        <p-message severity="error" fluid class="">{{ errorMessage() }}</p-message>
+      <div class="mb-4">
+        <p-message severity="error" fluid>{{ errorMessage() }}</p-message>
       </div>
     }
 
     @if (successMessage()) {
-      <div class="mb-4 w-full text-left [&_.p-message-success]:bg-green-950/60 [&_.p-message-success]:border-green-800/50 [&_.p-message-text]:text-green-200">
+      <div class="mb-4">
         <p-message severity="success" fluid>{{ successMessage() }}</p-message>
       </div>
     }
 
-    @if (activeTariff()) {
-      <div class="bg-surface-950/50 border border-surface-800 p-6 rounded-2xl flex flex-col gap-6 text-left">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-surface-800 pb-4 text-left">
-          <div class="text-left">
-            <span class="text-xs bg-primary/20 text-primary border border-primary/30 px-2.5 py-1 rounded-md uppercase font-bold tracking-wider">Tarifa activa del negocio</span>
-            <h3 class="text-2xl font-black text-surface-50 mt-2 text-left">{{ activeTariff().name }}</h3>
-            <p class="text-sm text-muted-color mt-0.5 text-left">Comercializadora asociada: <span class="text-surface-200 font-semibold uppercase">{{ activeTariff().energyCompany }}</span></p>
-          </div>
-          <p-button label="eliminar tarifa" icon="pi pi-trash" severity="danger" (click)="onDeleteActiveTariff()" class="uppercase font-bold text-xs shrink-0"></p-button>
-        </div>
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         BLOQUE ADMIN: tabla CRUD del catálogo maestro
+    ════════════════════════════════════════════════════════════════════════ -->
+    @if (isAdmin()) {
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
-          <div class="bg-surface-900 border border-surface-800 p-4 rounded-xl text-left">
-            <span class="text-xs text-muted-color uppercase font-bold text-left">Acceso de red</span>
-            <p class="text-lg font-bold text-surface-100 mt-1 text-left uppercase">{{ activeTariff().type }}</p>
-          </div>
-          <div class="bg-surface-900 border border-surface-800 p-4 rounded-xl text-left">
-            <span class="text-xs text-muted-color uppercase font-bold text-left">Segmento de mercado</span>
-            <p class="text-lg font-bold text-surface-100 mt-1 text-left uppercase">Mercado {{ activeTariff().market }}</p>
-          </div>
-          <div class="bg-surface-900 border border-surface-800 p-4 rounded-xl text-left">
-            <span class="text-xs text-muted-color uppercase font-bold text-left">Potencia contratada</span>
-            <p class="text-lg font-bold text-primary mt-1 text-left">{{ activeTariff().contractedPowerKw }} kW</p>
-          </div>
-        </div>
-
-        @if (activeTariff().periods && activeTariff().periods.length > 0) {
-          <div class="mt-2 text-left">
-            <h4 class="text-sm font-bold uppercase tracking-wider text-surface-300 mb-3 text-left">Tramos de discriminación horaria guardados</h4>
-            <div class="flex flex-col gap-3 text-left">
-              @for (p of activeTariff().periods; track p.id) {
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-surface-900 rounded-xl border border-surface-800 text-left">
-                  <div class="text-left">
-                    <p class="text-sm font-bold text-surface-100 text-left">{{ p.name }}</p>
-                    <p class="text-xs text-muted-color mt-0.5 text-left font-mono">Vigencia horaria: {{ p.startHour }} - {{ p.endHour }}</p>
-                  </div>
-                  <div class="text-left sm:text-right">
-                    <span class="text-xs text-muted-color uppercase font-semibold text-left">Precio de la energía</span>
-                    <p class="text-base font-black text-primary text-left sm:text-right font-mono">{{ p.priceKwh | number:'1.4-4' }} €/kWh</p>
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
+      <!-- Toolbar de catálogo -->
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold text-surface-200">
+          <i class="pi pi-book text-primary mr-2"></i>Catálogo de plantillas
+        </h3>
+        @if (!showForm() || isEditingMyTariffMode()) {
+          <p-button
+            label="nueva plantilla"
+            icon="pi pi-plus"
+            (click)="onNewCatalogTariff()"
+            class="uppercase font-bold text-xs"
+          ></p-button>
         }
       </div>
-    } @else {
-      <form [formGroup]="tariffForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-6 text-left">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-          <div class="flex flex-col gap-1 text-left">
-            <label class="text-sm font-semibold text-surface-300 text-left">Nombre de la tarifa</label>
-            <input type="text" pInputText formControlName="name" class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary text-left w-full" placeholder="ej. contrato energía fábrica" />
-            @if (tariffForm.controls.name.touched && tariffForm.controls.name.invalid) {
-              <small class="text-red-400 text-xs text-left">El nombre de la tarifa es obligatorio.</small>
-            }
+
+      <!-- Tabla del catálogo -->
+      @if (!showForm() || isEditingMyTariffMode()) {
+        @if (store.isLoadingCatalog()) {
+          <div class="flex justify-center py-12">
+            <i class="pi pi-spin pi-spinner text-primary text-3xl"></i>
           </div>
-
-          <div class="flex flex-col gap-1 text-left">
-            <label class="text-sm font-semibold text-surface-300 text-left">Comercializadora eléctrica</label>
-            <input type="text" pInputText formControlName="energyCompany" class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary text-left w-full" placeholder="ej. endesa energía s.a." />
-            @if (tariffForm.controls.energyCompany.touched && tariffForm.controls.energyCompany.invalid) {
-              <small class="text-red-400 text-xs text-left">Indica la comercializadora de tu contrato.</small>
-            }
+        } @else if (store.isCatalogEmpty()) {
+          <div class="bg-surface-900 border border-dashed border-surface-800 rounded-2xl p-10 text-center">
+            <i class="pi pi-inbox text-surface-600 text-4xl mb-3"></i>
+            <p class="text-surface-400 font-medium">El catálogo no tiene plantillas todavía.</p>
+            <p class="text-surface-600 text-sm mt-1">Crea la primera plantilla para que los usuarios puedan asignársela.</p>
           </div>
-
-          <div class="flex flex-col gap-1 text-left">
-            <label class="text-sm font-semibold text-surface-300 text-left">Tipo de acceso de red</label>
-            <p-select [options]="typeOptions" formControlName="type" optionLabel="label" optionValue="value" fluid class="bg-surface-800 border-surface-700 text-surface-50 text-left [&_.p-select-label]:text-left"></p-select>
-          </div>
-
-          <div class="flex flex-col gap-1 text-left">
-            <label class="text-sm font-semibold text-surface-300 text-left">Tipo de mercado contractual</label>
-            <p-select [options]="marketOptions" formControlName="market" optionLabel="label" optionValue="value" fluid class="bg-surface-800 border-surface-700 text-surface-50 text-left [&_.p-select-label]:text-left"></p-select>
-          </div>
-
-          <div class="flex flex-col gap-1 md:col-span-2 text-left">
-            <label class="text-sm font-semibold text-surface-300 text-left">Potencia máxima contratada (kW)</label>
-            <p-inputNumber formControlName="contractedPowerKw" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0.1" fluid class="[&_input]:text-left [&_input]:bg-surface-800 [&_input]:border-surface-700 [&_input]:text-surface-50 [&_input]:focus:border-primary"></p-inputNumber>
-            @if (tariffForm.controls.contractedPowerKw.touched && tariffForm.controls.contractedPowerKw.invalid) {
-              <small class="text-red-400 text-xs text-left">Introduce un valor válido de potencia.</small>
-            }
-          </div>
-        </div>
-
-        <div class="border-t border-surface-800 pt-4 text-left">
-          <h3 class="text-lg font-bold text-surface-200 mb-4 flex items-center gap-2 text-left"><i class="pi pi-calendar-times text-primary"></i> Precios por tramos horarios (energía)</h3>
-
-          <div formArrayName="periods" class="flex flex-col gap-6 text-left">
-            @for (period of periods.controls; track $index; let i = $index) {
-              <div [formGroupName]="i" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-surface-900/50 p-5 rounded-xl border border-surface-800 items-start text-left">
-                <div class="flex flex-col gap-1 text-left">
-                  <span class="text-xs font-bold text-surface-400 uppercase text-left">Tramo</span>
-                  <input type="text" pInputText formControlName="name" class="bg-surface-800 border-surface-700 text-surface-50 font-bold text-left" readonly />
-                </div>
-                <div class="flex flex-col gap-1 text-left">
-                  <span class="text-xs font-bold text-surface-400 uppercase text-left">Precio (€/kWh)</span>
-                  <p-inputNumber formControlName="priceKwh" mode="decimal" [minFractionDigits]="4" [maxFractionDigits]="4" [min]="0.0001" fluid class="[&_input]:text-left [&_input]:bg-surface-800 [&_input]:border-surface-700 [&_input]:text-surface-50"></p-inputNumber>
-                </div>
-                <div class="flex flex-col gap-1 text-left">
-                  <span class="text-xs font-bold text-surface-400 uppercase text-left">Hora inicio / Fin</span>
-                  <div class="flex gap-2 items-center text-left">
-                    <input type="text" pInputText formControlName="startHour" class="w-full bg-surface-800 border-surface-700 text-surface-50 text-left p-inputtext-sm" />
-                    <span class="text-surface-500">-</span>
-                    <input type="text" pInputText formControlName="endHour" class="w-full bg-surface-800 border-surface-700 text-surface-50 text-left p-inputtext-sm" />
-                  </div>
-                </div>
-                <div class="flex flex-col gap-1 text-left">
-                  <span class="text-xs font-bold text-surface-400 uppercase text-left">Mes inicio / Fin</span>
-                  <div class="flex gap-2 items-center text-left">
-                    <p-inputNumber formControlName="startMonth" [min]="1" [max]="12" placeholder="Inicio" fluid class="[&_input]:text-left [&_input]:bg-surface-800 [&_input]:border-surface-700 [&_input]:text-surface-50"></p-inputNumber>
-                    <span class="text-surface-500">-</span>
-                    <p-inputNumber formControlName="endMonth" [min]="1" [max]="12" placeholder="Fin" fluid class="[&_input]:text-left [&_input]:bg-surface-800 [&_input]:border-surface-700 [&_input]:text-surface-50"></p-inputNumber>
-                  </div>
+        } @else {
+          <div class="rounded-xl overflow-hidden border border-surface-800 mb-6">
+            <!-- Cabecera de la tabla -->
+            <div class="hidden md:grid md:grid-cols-[2fr_1fr_1fr_1fr_2fr_auto] bg-surface-800/60 px-4 py-3 gap-4 border-b border-surface-700">
+              <span class="text-surface-400 text-xs uppercase font-bold tracking-wider">Nombre</span>
+              <span class="text-surface-400 text-xs uppercase font-bold tracking-wider">Peaje</span>
+              <span class="text-surface-400 text-xs uppercase font-bold tracking-wider">Mercado</span>
+              <span class="text-surface-400 text-xs uppercase font-bold tracking-wider">Zona</span>
+              <span class="text-surface-400 text-xs uppercase font-bold tracking-wider">Comercializadora</span>
+              <span class="text-surface-400 text-xs uppercase font-bold tracking-wider text-right">Acciones</span>
+            </div>
+            <!-- Filas del catálogo -->
+            @for (tariff of store.catalog(); track tariff.id) {
+              <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_2fr_auto] gap-4 px-4 py-3 border-b border-surface-800/60 hover:bg-surface-800/30 transition-colors items-center last:border-b-0">
+                <span class="text-surface-100 font-semibold">{{ tariff.name }}</span>
+                <span class="text-xs bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 rounded font-bold uppercase w-fit">
+                  {{ tariff.accessTariffCode }}
+                </span>
+                <span class="text-surface-300 text-sm uppercase">{{ tariff.market }}</span>
+                <span class="text-surface-400 text-sm">{{ tariff.geographicZone }}</span>
+                <span class="text-surface-300 text-sm">{{ tariff.energyCompany }}</span>
+                <div class="flex gap-1 items-center justify-end">
+                  <p-button
+                    icon="pi pi-user-plus"
+                    severity="secondary"
+                    [text]="true"
+                    [disabled]="store.hasMyTariff()"
+                    (click)="onAssignTemplate(tariff)"
+                    [title]="store.hasMyTariff() ? 'Ya tienes una tarifa asignada' : 'Asignarme esta tarifa'"
+                  ></p-button>
+                  <p-button
+                    icon="pi pi-pencil"
+                    severity="secondary"
+                    [text]="true"
+                    (click)="onEditCatalogTariff(tariff)"
+                    title="Editar plantilla"
+                  ></p-button>
+                  <p-button
+                    icon="pi pi-trash"
+                    severity="danger"
+                    [text]="true"
+                    (click)="onDeleteCatalogTariff(tariff)"
+                    title="Eliminar plantilla"
+                  ></p-button>
                 </div>
               </div>
             }
           </div>
-        </div>
+        }
+      }
 
-        <div class="flex gap-4 mt-4 justify-start text-left">
-          <p-button type="submit" label="guardar y activar métricas" icon="pi pi-check-circle" [loading]="isLoading()" class="bg-primary border-none text-primary-inverse font-bold px-6 py-3 rounded-xl transition-colors text-left uppercase justify-start" fluid></p-button>
+      <!-- Formulario de creación/edición de plantilla del catálogo (ADMIN) -->
+      @if (showForm() && !isEditingMyTariffMode()) {
+        <div class="bg-surface-900 border border-surface-800 rounded-2xl p-6 mb-6">
+          <div class="flex justify-between items-center mb-5 border-b border-surface-800 pb-4">
+            <h3 class="text-lg font-bold text-surface-100">
+              @if (editingTariff()) { Editar plantilla } @else { Nueva plantilla }
+            </h3>
+            <p-button icon="pi pi-times" severity="secondary" [text]="true" (click)="onCancelForm()"></p-button>
+          </div>
+          <ng-container
+            [ngTemplateOutlet]="tariffFormTemplate"
+            [ngTemplateOutletContext]="{ submitFn: onSubmitCatalogForm.bind(this), submitLabel: editingTariff() ? 'guardar cambios' : 'crear plantilla', pricesOnly: false }"
+          ></ng-container>
         </div>
-      </form>
+      }
+
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         MI TARIFA: sección visible para todos (admin y usuario)
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div class="mb-6">
+      <h3 class="text-lg font-bold text-surface-200 mb-4">
+        <i class="pi pi-id-card text-primary mr-2"></i>Mi tarifa activa
+      </h3>
+
+      @if (store.isLoadingMyTariff()) {
+        <div class="flex justify-center py-8">
+          <i class="pi pi-spin pi-spinner text-primary text-3xl"></i>
+        </div>
+      } @else if (store.hasMyTariff()) {
+        <!-- Tarjeta de tarifa asignada -->
+        <div class="bg-surface-900 border border-surface-800 rounded-2xl p-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-surface-800 pb-4 mb-4">
+            <div>
+              <span class="text-xs bg-primary/20 text-primary border border-primary/30 px-2.5 py-1 rounded-md uppercase font-bold tracking-wider">
+                activa
+              </span>
+              <h3 class="text-2xl font-black text-surface-50 mt-2">{{ store.myTariff()!.name }}</h3>
+              <p class="text-sm text-muted-color mt-0.5">
+                {{ store.myTariff()!.energyCompany }} ·
+                <span class="text-primary font-semibold uppercase">{{ store.myTariff()!.accessTariffCode }}</span> ·
+                {{ store.myTariff()!.geographicZone }}
+              </p>
+            </div>
+            <div class="flex gap-2 shrink-0">
+              @if (!showForm() || !isEditingMyTariffMode()) {
+                <p-button
+                  label="editar precios"
+                  icon="pi pi-pencil"
+                  severity="secondary"
+                  (click)="onEditMyTariff()"
+                ></p-button>
+              }
+              <p-button
+                label="desvincular"
+                icon="pi pi-unlink"
+                severity="danger"
+                [outlined]="true"
+                (click)="onUnlinkMyTariff()"
+              ></p-button>
+            </div>
+          </div>
+
+          <!-- Resumen de periodos de energía -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            @for (p of store.myTariff()!.periods; track p.periodCode) {
+              <div class="bg-surface-950/60 border border-surface-800 p-4 rounded-xl">
+                <span class="text-xs text-muted-color uppercase font-bold">{{ p.periodCode }} — Energía</span>
+                <p class="text-lg font-black text-primary mt-1 font-mono">{{ p.priceKwh | number:'1.4-4' }} €/kWh</p>
+              </div>
+            }
+          </div>
+
+          <!-- Formulario de edición de precios (aparece aquí, dentro de la tarjeta) -->
+          @if (showForm() && isEditingMyTariffMode()) {
+            <div class="mt-6 border-t border-surface-800 pt-5">
+              <div class="flex justify-between items-center mb-4">
+                <h4 class="text-sm font-bold text-surface-300 uppercase tracking-wider">Editar precios y potencias</h4>
+                <p-button icon="pi pi-times" severity="secondary" [text]="true" (click)="onCancelForm()"></p-button>
+              </div>
+              <ng-container
+                [ngTemplateOutlet]="tariffFormTemplate"
+                [ngTemplateOutletContext]="{ submitFn: onSubmitMyTariff.bind(this), submitLabel: 'guardar precios', pricesOnly: true }"
+              ></ng-container>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Sin tarifa asignada -->
+        <p-message severity="warn" fluid>
+          Sin tarifa configurada — elige una plantilla del catálogo y asígnatela para activar las métricas de costes.
+        </p-message>
+      }
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         PLANTILLAS DISPONIBLES: solo visible para usuarios (no admin)
+    ════════════════════════════════════════════════════════════════════════ -->
+    @if (!isAdmin()) {
+      <div>
+        <h3 class="text-lg font-bold text-surface-200 mb-4">
+          <i class="pi pi-list text-primary mr-2"></i>Plantillas disponibles
+        </h3>
+
+        @if (store.isLoadingCatalog()) {
+          <div class="flex justify-center py-8">
+            <i class="pi pi-spin pi-spinner text-primary text-3xl"></i>
+          </div>
+        } @else if (store.isCatalogEmpty()) {
+          <div class="bg-surface-900 border border-dashed border-surface-800 rounded-2xl p-10 text-center">
+            <i class="pi pi-inbox text-surface-600 text-4xl mb-3"></i>
+            <p class="text-surface-400 font-medium">No hay plantillas disponibles todavía.</p>
+            <p class="text-surface-600 text-sm mt-1">El administrador debe crear plantillas en el catálogo.</p>
+          </div>
+        } @else {
+          <div class="flex flex-col gap-3">
+            @for (tariff of store.catalog(); track tariff.id) {
+              <div class="bg-surface-900 border border-surface-800 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-surface-100 font-semibold">{{ tariff.name }}</span>
+                    <span class="text-xs bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 rounded font-bold uppercase">
+                      {{ tariff.accessTariffCode }}
+                    </span>
+                    <span class="text-xs text-muted-color uppercase">{{ tariff.geographicZone }}</span>
+                  </div>
+                  <p class="text-muted-color text-sm mt-0.5">
+                    {{ tariff.energyCompany }} · Mercado {{ tariff.market }} ·
+                    {{ tariff.periods.length }} periodos de energía
+                  </p>
+                </div>
+                <p-button
+                  [label]="store.hasMyTariff() ? 'ya asignada' : 'asignarme esta tarifa'"
+                  [icon]="store.hasMyTariff() ? 'pi pi-check' : 'pi pi-check-circle'"
+                  severity="success"
+                  [outlined]="true"
+                  [disabled]="store.hasMyTariff()"
+                  (click)="onAssignTemplate(tariff)"
+                  class="shrink-0 text-xs"
+                ></p-button>
+              </div>
+            }
+          </div>
+        }
+      </div>
     }
 
   </div>
 </div>
+
+<!-- =========================================================================
+     TEMPLATE REUTILIZABLE: formulario dinámico de tarifa
+     pricesOnly = true → oculta los campos estructurales (nombre, peaje, etc.)
+                       y muestra solo los precios de energía y potencias.
+========================================================================== -->
+<ng-template #tariffFormTemplate let-submitFn="submitFn" let-submitLabel="submitLabel" let-pricesOnly="pricesOnly">
+  <form [formGroup]="tariffForm" (ngSubmit)="submitFn()" class="flex flex-col gap-6">
+
+    <!-- Campos estructurales (ocultos en modo edición de precios) -->
+    @if (!pricesOnly) {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold text-surface-300">Nombre de la tarifa</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="name"
+            class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary w-full"
+            placeholder="ej. contrato hogar peninsular"
+          />
+          @if (tariffForm.controls.name.touched && tariffForm.controls.name.invalid) {
+            <small class="text-red-400 text-xs">El nombre es obligatorio (mín. 3 caracteres).</small>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold text-surface-300">Comercializadora</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="energyCompany"
+            class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary w-full"
+            placeholder="ej. Endesa Energía S.A."
+          />
+          @if (tariffForm.controls.energyCompany.touched && tariffForm.controls.energyCompany.invalid) {
+            <small class="text-red-400 text-xs">Indica la comercializadora del contrato.</small>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold text-surface-300">Peaje de acceso</label>
+          <p-select
+            [options]="accessTariffOptions"
+            formControlName="accessTariffCode"
+            optionLabel="label"
+            optionValue="value"
+            fluid
+            class="[&_.p-select-label]:text-left"
+          ></p-select>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold text-surface-300">Tipo de mercado</label>
+          <p-select
+            [options]="marketOptions"
+            formControlName="market"
+            optionLabel="label"
+            optionValue="value"
+            fluid
+            class="[&_.p-select-label]:text-left"
+          ></p-select>
+        </div>
+
+        <div class="flex flex-col gap-1 md:col-span-2">
+          <label class="text-sm font-semibold text-surface-300">Zona geográfica</label>
+          <p-select
+            [options]="geographicZoneOptions"
+            formControlName="geographicZone"
+            optionLabel="label"
+            optionValue="value"
+            fluid
+            class="[&_.p-select-label]:text-left"
+          ></p-select>
+          <small class="text-muted-color text-xs">
+            Determina las temporadas regulatorias (CNMC) para resolver los periodos P1-P6.
+          </small>
+        </div>
+
+      </div>
+    }
+
+    <!-- Precios de energía por periodo -->
+    <div class="border-t border-surface-800 pt-4">
+      <h4 class="text-sm font-bold uppercase tracking-wider text-surface-300 mb-3 flex items-center gap-2">
+        <i class="pi pi-bolt text-primary"></i> Precio de la energía por periodo (€/kWh)
+      </h4>
+      <div formArrayName="periods" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        @for (period of periods.controls; track $index; let i = $index) {
+          <div [formGroupName]="i" class="bg-surface-950/60 border border-surface-800 rounded-xl p-4">
+            <span class="text-xs font-bold text-primary uppercase">
+              {{ period.get('periodCode')?.value }}
+            </span>
+            <div class="mt-2">
+              <p-inputNumber
+                formControlName="priceKwh"
+                mode="decimal"
+                [minFractionDigits]="4"
+                [maxFractionDigits]="4"
+                [min]="0.0001"
+                (onFocus)="onNumberInputFocus($event)"
+                fluid
+                class="[&_input]:bg-surface-800 [&_input]:border-surface-700 [&_input]:text-surface-50"
+              ></p-inputNumber>
+            </div>
+            @if (period.get('priceKwh')?.touched && period.get('priceKwh')?.invalid) {
+              <small class="text-red-400 text-xs mt-1">El precio debe ser mayor que 0.</small>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Potencias contratadas por periodo -->
+    <div class="border-t border-surface-800 pt-4">
+      <h4 class="text-sm font-bold uppercase tracking-wider text-surface-300 mb-1 flex items-center gap-2">
+        <i class="pi pi-sliders-h text-primary"></i> Potencia contratada por periodo (kW)
+      </h4>
+      <p class="text-xs text-muted-color mb-3">
+        En tarifas 3.0TD, 6.1TD y 6.2TD la potencia debe cumplir P1 ≤ P2 ≤ P3 ≤ P4 ≤ P5 ≤ P6.
+      </p>
+
+      @if (contractedPowers.errors?.['ascendingPower'] && contractedPowers.touched) {
+        <small class="text-red-400 text-xs block mb-2">
+          Las potencias no cumplen el orden ascendente obligatorio (P1 ≤ P2 ≤ ... ≤ P6).
+        </small>
+      }
+
+      <div formArrayName="contractedPowers" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        @for (cp of contractedPowers.controls; track $index; let i = $index) {
+          <div [formGroupName]="i" class="bg-surface-950/60 border border-surface-800 rounded-xl p-4">
+            <span class="text-xs font-bold text-surface-300 uppercase">
+              {{ cp.get('periodCode')?.value }}
+            </span>
+            <div class="mt-2">
+              <p-inputNumber
+                formControlName="contractedPowerKw"
+                mode="decimal"
+                [minFractionDigits]="2"
+                [maxFractionDigits]="3"
+                [min]="0.001"
+                (onFocus)="onNumberInputFocus($event)"
+                fluid
+                class="[&_input]:bg-surface-800 [&_input]:border-surface-700 [&_input]:text-surface-50"
+              ></p-inputNumber>
+            </div>
+            @if (cp.get('contractedPowerKw')?.touched && cp.get('contractedPowerKw')?.invalid) {
+              <small class="text-red-400 text-xs mt-1">La potencia debe ser mayor que 0.</small>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="flex gap-3 mt-2">
+      <p-button
+        type="submit"
+        [label]="submitLabel"
+        icon="pi pi-check-circle"
+        [loading]="isSubmitting()"
+        class="uppercase font-bold text-xs"
+      ></p-button>
+      <p-button
+        type="button"
+        label="cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        [text]="true"
+        (click)="onCancelForm()"
+      ></p-button>
+    </div>
+
+  </form>
+</ng-template>

@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
-import { Component, inject, signal } from "@angular/core";
+import { Component, effect, inject, signal } from "@angular/core";
 import { Button } from "primeng/button";
 import { Message } from "primeng/message";
 import { TableModule } from "primeng/table";
@@ -20,8 +20,25 @@ export default class AlertsComponent {
 	readonly errorMessage = signal<string | null>(null);
 	readonly successMessage = signal<string | null>(null);
 
+	private _successTimer: number | null = null;
+	private _errorTimer: number | null = null;
+
 	constructor() {
 		this.loadAlerts();
+
+		effect(() => {
+			if (this.successMessage() !== null) {
+				if (this._successTimer !== null) clearTimeout(this._successTimer);
+				this._successTimer = window.setTimeout(() => this.successMessage.set(null), 5000);
+			}
+		});
+
+		effect(() => {
+			if (this.errorMessage() !== null) {
+				if (this._errorTimer !== null) clearTimeout(this._errorTimer);
+				this._errorTimer = window.setTimeout(() => this.errorMessage.set(null), 7000);
+			}
+		});
 	}
 
 	loadAlerts(): void {

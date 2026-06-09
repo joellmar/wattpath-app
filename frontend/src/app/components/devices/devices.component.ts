@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
-import { Component, inject, signal } from "@angular/core";
+import { Component, effect, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Badge } from "primeng/badge";
 import { Button } from "primeng/button";
@@ -40,6 +40,9 @@ export default class DevicesComponent {
 	readonly errorMessage = signal<string | null>(null);
 	readonly successMessage = signal<string | null>(null);
 
+	private _successTimer: number | null = null;
+	private _errorTimer: number | null = null;
+
 	// Expresión regular estándar para validar direcciones MAC industriales (con o sin dos puntos)
 	private readonly macRegex = /^[0-9A-Fa-f]{12}$/;
 
@@ -50,6 +53,20 @@ export default class DevicesComponent {
 
 	constructor() {
 		this.store.loadDevices();
+
+		effect(() => {
+			if (this.successMessage() !== null) {
+				if (this._successTimer !== null) clearTimeout(this._successTimer);
+				this._successTimer = window.setTimeout(() => this.successMessage.set(null), 5000);
+			}
+		});
+
+		effect(() => {
+			if (this.errorMessage() !== null) {
+				if (this._errorTimer !== null) clearTimeout(this._errorTimer);
+				this._errorTimer = window.setTimeout(() => this.errorMessage.set(null), 7000);
+			}
+		});
 	}
 
 	onSubmit(): void {

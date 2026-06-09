@@ -17,27 +17,29 @@
     </div>
   }
 
-  <div class="w-full bg-surface-900 border border-surface-800 rounded-2xl p-6 shadow-xl">
+  <div class="w-full bg-surface-900 border border-surface-800 rounded-2xl overflow-hidden shadow-xl">
     <p-table [value]="alertsList()" responsiveLayout="stack" class="w-full">
       <ng-template pTemplate="header">
         <tr>
-          <th class="text-left py-3 px-4 font-semibold text-sm">Mensaje de incidencia</th>
-          <th class="text-center py-3 px-4 font-semibold text-sm w-32">Operaciones</th>
+          <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider text-surface-400 bg-surface-800/60 border-b border-surface-700">Mensaje de incidencia</th>
+          <th class="text-right py-3 px-4 text-xs font-bold uppercase tracking-wider text-surface-400 bg-surface-800/60 border-b border-surface-700 w-32">Operaciones</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-alert>
         <tr class="border-b border-surface-800 hover:bg-surface-800/40 transition-colors">
-          <td class="py-4 px-4 text-sm text-surface-200 text-left leading-relaxed">{{ alert.message }}</td>
-          <td class="text-center py-4 px-4">
-            <p-button icon="pi pi-check" severity="success" [rounded]="true" [text]="true" (click)="onDismissAlert(alert.id)" aria-label="marcar como resuelto" class="mx-auto flex justify-center"></p-button>
+          <td class="py-4 px-4 text-sm text-surface-200 leading-relaxed">{{ alert.message }}</td>
+          <td class="py-4 px-4">
+            <div class="flex justify-end">
+              <p-button icon="pi pi-check" severity="success" [rounded]="true" [text]="true" (click)="onDismissAlert(alert.id)" aria-label="marcar como resuelto"></p-button>
+            </div>
           </td>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="2" class="text-center py-12 text-sm text-surface-500 uppercase">la planta opera dentro de los límites de potencia nominal contratada. cero alertas.</td>
+          <td colspan="2" class="text-center py-12 text-sm text-surface-500 uppercase">La planta opera dentro de los límites de potencia nominal contratada. Cero alertas.</td>
         </tr>
       </ng-template>
     </p-table>

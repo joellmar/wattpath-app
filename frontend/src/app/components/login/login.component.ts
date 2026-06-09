@@ -1,4 +1,4 @@
-import { Component, inject, signal } from "@angular/core";
+import { Component, effect, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router, RouterLink } from "@angular/router";
 import { Button } from "primeng/button";
@@ -32,6 +32,14 @@ export default class LoginComponent {
 	// Señales de control de interfaz de usuario
 	readonly isLoading = signal<boolean>(false);
 	readonly loginError = signal<string | null>(null);
+
+	private _errorTimer: number | null = null;
+	private readonly _autoDismissError = effect(() => {
+		if (this.loginError() !== null) {
+			if (this._errorTimer !== null) clearTimeout(this._errorTimer);
+			this._errorTimer = window.setTimeout(() => this.loginError.set(null), 7000);
+		}
+	});
 
 	// Formulario reactivo
 	readonly loginForm = this.formBuilder.group({

@@ -18,7 +18,7 @@ public class TariffController {
 
     @GetMapping
     public ResponseEntity<List<TariffDto>> getAllTariffs() {
-        return ResponseEntity.ok(tariffService.listAll());
+        return ResponseEntity.ok(tariffService.listCatalog());
     }
 
     @GetMapping("/{id}")
@@ -35,8 +35,7 @@ public class TariffController {
     @PostMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TariffDto> updateTariff(@PathVariable Long id, @RequestBody TariffDto tariffDto) {
-        TariffDto updatedDto = new TariffDto(id, tariffDto.name(), tariffDto.type(), tariffDto.market(), tariffDto.contractedPowerKw(), tariffDto.energyCompany(), tariffDto.periods());
-        return ResponseEntity.ok(tariffService.save(updatedDto));
+        return ResponseEntity.ok(tariffService.update(id, tariffDto));
     }
 
     @DeleteMapping("/{id}")
