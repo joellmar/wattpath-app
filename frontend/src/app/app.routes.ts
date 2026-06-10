@@ -31,6 +31,11 @@ export const routes: Routes = [
 		canActivate: [authGuard],
 	},
 	{
+		path: "auth/oauth/callback",
+		loadComponent: () =>
+			import("./components/oauth-callback/oauth-callback.component"),
+	},
+	{
 		path: "",
 		redirectTo: "dashboard",
 		pathMatch: "full",

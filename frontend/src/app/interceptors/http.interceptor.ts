@@ -16,10 +16,12 @@ export const httpInterceptor: HttpInterceptorFn = (req, next) => {
 		headers: req.headers.set("X-Requested-With", "XMLHttpRequest"),
 	});
 
-	// CRÍTICO: Enviamos el token a todo lo que vaya a /api/v1/ EXCEPTO a las rutas públicas de auth
+	// CRÍTICO: Enviamos el token a todo lo que vaya a /api/v1/ EXCEPTO a las rutas públicas de auth.
+	// El endpoint oauth/exchange es público porque el ticket temporal es la credencial en ese momento.
 	const isAuthRoute =
 		req.url.includes("/api/v1/auth/login") ||
-		req.url.includes("/api/v1/auth/register");
+		req.url.includes("/api/v1/auth/register") ||
+		req.url.includes("/api/v1/auth/oauth/exchange");
 
 	// SOLUCIÓN: Leemos el token en tiempo de evaluación de ruta, no al inicio de la función
 	if (req.url.includes("/api/v1") && !isAuthRoute) {

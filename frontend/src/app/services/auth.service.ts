@@ -19,4 +19,12 @@ export class AuthService {
 	register(user: RegisterRequest): Observable<void> {
 		return this.http.post<void>(`${this.baseUrl}/register`, user);
 	}
+
+	// Intercambia el ticket de un solo uso que genera el backend tras OAuth2
+	// por el JWT de sesión definitivo.
+	exchangeOAuthTicket(ticket: string): Observable<LoginUserJwt> {
+		return this.http.post<LoginUserJwt>(`${this.baseUrl}/oauth/exchange`, {
+			ticket,
+		});
+	}
 }

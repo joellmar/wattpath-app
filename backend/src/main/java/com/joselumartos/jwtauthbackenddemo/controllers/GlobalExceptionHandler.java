@@ -3,6 +3,7 @@ package com.joselumartos.jwtauthbackenddemo.controllers;
 import com.joselumartos.jwtauthbackenddemo.dtos.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,8 +27,7 @@ public class GlobalExceptionHandler {
                 exception.getMessage(),
                 LocalDateTime.now()
         );
-
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND); // Retorna 404
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -36,24 +36,22 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
                 HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-                "Credenciales de acceso incorrectas para el sistema corporativo.",
+                "Credenciales de acceso incorrectas.",
                 LocalDateTime.now()
         );
-
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED); // Retorna 401
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException exception, WebRequest request) {
-        log.error("Violación de regla de negocio inmanente: {}", exception.getMessage());
+        log.warn("Violación de regla de negocio: {}", exception.getMessage());
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
                 exception.getMessage(),
                 LocalDateTime.now()
         );
-
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST); // Retorna 400
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
@@ -65,11 +63,52 @@ public class GlobalExceptionHandler {
                 exception.getMessage(),
                 LocalDateTime.now()
         );
-
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED); // Retorna 401
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 
-    // Captura cualquier otro error inesperado (500)
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbiddenException(ForbiddenException exception, WebRequest request) {
+        log.warn("Acceso denegado: {}", exception.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                exception.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    /**
+     * Captura colisiones de unicidad en base de datos (por concurrencia).
+     * El check previo en servicio cubre el 99% de los casos; este handler
+     * captura la carrera de dos registros simultáneos con el mismo email.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
+            DataIntegrityViolationException exception, WebRequest request) {
+
+        String causeMessage = exception.getMostSpecificCause().getMessage();
+        log.error("Violación de integridad en base de datos: {}", causeMessage);
+
+        if (causeMessage != null && causeMessage.contains("users_username_key")) {
+            ErrorResponse error = new ErrorResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                    "Ya existe una cuenta registrada con ese correo electrónico.",
+                    LocalDateTime.now()
+            );
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                "Ha ocurrido un error interno de procesamiento en la plataforma de telemetría.",
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception exception, WebRequest webRequest) {
         log.error("¡EXCEPCIÓN CRÍTICA NO CONTROLADA EN EL BACKEND!: ", exception);
@@ -79,8 +118,6 @@ public class GlobalExceptionHandler {
                 "Ha ocurrido un error interno de procesamiento en la plataforma de telemetría.",
                 LocalDateTime.now()
         );
-
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR); // Retorna 500
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
-

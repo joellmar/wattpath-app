@@ -37,7 +37,10 @@ export default class LoginComponent {
 	private readonly _autoDismissError = effect(() => {
 		if (this.loginError() !== null) {
 			if (this._errorTimer !== null) clearTimeout(this._errorTimer);
-			this._errorTimer = window.setTimeout(() => this.loginError.set(null), 7000);
+			this._errorTimer = window.setTimeout(
+				() => this.loginError.set(null),
+				7000,
+			);
 		}
 	});
 
@@ -46,6 +49,10 @@ export default class LoginComponent {
 		username: ["", [Validators.required, Validators.email]], // Obligamos formato email segun diseño tecnico
 		password: ["", [Validators.required, Validators.minLength(4)]],
 	});
+
+	loginWithProvider(provider: "google" | "github"): void {
+		window.location.href = `/oauth2/authorization/${provider}`;
+	}
 
 	onSubmit() {
 		if (this.loginForm.invalid) {
