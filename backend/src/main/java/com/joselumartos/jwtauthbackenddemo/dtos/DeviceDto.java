@@ -5,5 +5,6 @@ public record DeviceDto(
         String username,
         String name,
         String macAddress,
-        Boolean isOn
+        Boolean isOn,
+        Boolean simulated
 ) {}

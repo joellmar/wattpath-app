@@ -26,4 +26,8 @@ public class Device extends BaseEntity {
 
     @Column(name = "is_on")
     private Boolean isOn;
+
+    // columnDefinition con DEFAULT evita que Hibernate falle al añadir la columna NOT NULL sobre filas existentes
+    @Column(name = "is_simulated", nullable = false, columnDefinition = "boolean default false")
+    private Boolean simulated = false;
 }

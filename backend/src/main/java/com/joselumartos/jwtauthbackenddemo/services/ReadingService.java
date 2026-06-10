@@ -119,4 +119,24 @@ public class ReadingService {
 
         readingRepository.delete(reading);
     }
+
+    // Construye y persiste una lectura desde el job de simulación sin pasar por MapStruct,
+    // ya que los datos ya están calculados y no vienen de un DTO de MQTT externo.
+    @Transactional
+    public Reading saveSimulatedReading(
+            Device device,
+            Instant time,
+            BigDecimal powerW,
+            BigDecimal energyTotalKwh,
+            Boolean isOn
+    ) {
+        Reading reading = new Reading();
+        reading.setTime(time);
+        reading.setDevice(device);
+        reading.setPowerW(powerW);
+        reading.setEnergyTotalKwh(energyTotalKwh);
+        reading.setIsOn(isOn);
+
+        return readingRepository.save(reading);
+    }
 }

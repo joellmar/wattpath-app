@@ -4,4 +4,5 @@ export interface Device {
 	name: string;
 	macAddress: string;
 	isOn: boolean;
+	simulated: boolean;
 }

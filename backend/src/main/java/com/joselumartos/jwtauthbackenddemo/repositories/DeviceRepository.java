@@ -13,4 +13,6 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     Optional<Device> findByMacAddress(String macAddress);
 
     List<Device> findByUserUsername(String username);
+
+    List<Device> findBySimulatedTrue();
 }

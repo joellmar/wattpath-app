@@ -4,13 +4,15 @@ import { Component, effect, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Badge } from "primeng/badge";
 import { Button } from "primeng/button";
+import { Dialog } from "primeng/dialog";
+import { Fluid } from "primeng/fluid";
 import { InputText } from "primeng/inputtext";
 import { Message } from "primeng/message";
+// Table no es standalone en PrimeNG 21.1.7; se usa TableModule que sí está disponible en esta instalación
 import { TableModule } from "primeng/table";
 import type { Device } from "../../interfaces/device.interface";
 import { TelemetryStore } from "../../store/telemetry.store";
 
-// Interface estricta para el formulario
 interface ClaimDeviceForm {
 	name: string;
 	macAddress: string;
@@ -26,6 +28,8 @@ interface ClaimDeviceForm {
 		Button,
 		Message,
 		TableModule,
+		Dialog,
+		Fluid,
 		Badge,
 	],
 	templateUrl: "./devices.html",
@@ -40,15 +44,23 @@ export default class DevicesComponent {
 	readonly errorMessage = signal<string | null>(null);
 	readonly successMessage = signal<string | null>(null);
 
+	readonly selectedDevice = signal<Device | null>(null);
+	readonly detailsDialogVisible = signal(false);
+	readonly editDialogVisible = signal(false);
+	readonly isSavingEdit = signal(false);
+
 	private _successTimer: number | null = null;
 	private _errorTimer: number | null = null;
 
-	// Expresión regular estándar para validar direcciones MAC industriales (con o sin dos puntos)
 	private readonly macRegex = /^[0-9A-Fa-f]{12}$/;
 
 	readonly deviceForm = this.formBuilder.group({
 		name: ["", [Validators.required, Validators.minLength(3)]],
 		macAddress: ["", [Validators.required, Validators.pattern(this.macRegex)]],
+	});
+
+	readonly editDeviceForm = this.formBuilder.group({
+		name: ["", [Validators.required, Validators.minLength(3)]],
 	});
 
 	constructor() {
@@ -57,14 +69,20 @@ export default class DevicesComponent {
 		effect(() => {
 			if (this.successMessage() !== null) {
 				if (this._successTimer !== null) clearTimeout(this._successTimer);
-				this._successTimer = window.setTimeout(() => this.successMessage.set(null), 5000);
+				this._successTimer = window.setTimeout(
+					() => this.successMessage.set(null),
+					5000,
+				);
 			}
 		});
 
 		effect(() => {
 			if (this.errorMessage() !== null) {
 				if (this._errorTimer !== null) clearTimeout(this._errorTimer);
-				this._errorTimer = window.setTimeout(() => this.errorMessage.set(null), 7000);
+				this._errorTimer = window.setTimeout(
+					() => this.errorMessage.set(null),
+					7000,
+				);
 			}
 		});
 	}
@@ -88,7 +106,7 @@ export default class DevicesComponent {
 					"El dispositivo ha sido registrado y vinculado correctamente a tu cuenta.",
 				);
 				this.deviceForm.reset();
-				this.store.loadDevices(); // Refrescamos el grid de la tabla
+				this.store.loadDevices();
 			},
 			error: (err) => {
 				this.isLoadingSubmit.set(false);
@@ -126,11 +144,7 @@ export default class DevicesComponent {
 		this.errorMessage.set(null);
 		this.successMessage.set(null);
 
-		// Invoca el método de actualización del CRUD para cambiar el estado virtual (HU-20)
-		const payload = {
-			...device,
-			isOn: !device.isOn,
-		};
+		const payload: Device = { ...device, isOn: !device.isOn };
 
 		this.http.put<Device>(`/api/v1/devices/${device.id}`, payload).subscribe({
 			next: () => {
@@ -139,6 +153,51 @@ export default class DevicesComponent {
 			error: () => {
 				this.errorMessage.set(
 					"Fallo de comunicación al intentar apagar/encender el dispositivo.",
+				);
+			},
+		});
+	}
+
+	openDetails(device: Device): void {
+		this.selectedDevice.set(device);
+		this.detailsDialogVisible.set(true);
+	}
+
+	openEdit(device: Device): void {
+		this.selectedDevice.set(device);
+		this.editDeviceForm.setValue({ name: device.name });
+		this.editDialogVisible.set(true);
+	}
+
+	saveDeviceName(): void {
+		const device = this.selectedDevice();
+
+		if (device === null || this.editDeviceForm.invalid) {
+			this.editDeviceForm.markAllAsTouched();
+			return;
+		}
+
+		this.isSavingEdit.set(true);
+		this.errorMessage.set(null);
+		this.successMessage.set(null);
+
+		// Solo se modifica el nombre; el resto de campos del dispositivo se preservan tal cual.
+		const payload: Device = {
+			...device,
+			name: this.editDeviceForm.controls.name.getRawValue().trim(),
+		};
+
+		this.http.put<Device>(`/api/v1/devices/${device.id}`, payload).subscribe({
+			next: () => {
+				this.isSavingEdit.set(false);
+				this.editDialogVisible.set(false);
+				this.successMessage.set("Nombre del dispositivo actualizado.");
+				this.store.loadDevices();
+			},
+			error: () => {
+				this.isSavingEdit.set(false);
+				this.errorMessage.set(
+					"No se pudo actualizar el nombre del dispositivo.",
 				);
 			},
 		});

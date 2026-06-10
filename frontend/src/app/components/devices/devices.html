@@ -66,12 +66,47 @@
               <td class="py-4 px-4 text-sm font-medium text-surface-100">{{ device.name || 'sin nombre asignado' }}</td>
               <td class="py-4 px-4 text-sm text-surface-400 uppercase font-mono">{{ device.macAddress }}</td>
               <td class="py-4 px-4">
-                <p-badge [value]="device.isOn ? 'activo' : 'cortado'" [severity]="device.isOn ? 'success' : 'danger'" class="uppercase text-[10px] tracking-wider"></p-badge>
+                <div class="flex items-center gap-2">
+                  <p-badge [value]="device.isOn ? 'activo' : 'cortado'" [severity]="device.isOn ? 'success' : 'danger'" class="uppercase text-[10px] tracking-wider"></p-badge>
+                  @if (device.simulated) {
+                    <p-badge value="simulado" severity="info" class="uppercase text-[10px] tracking-wider"></p-badge>
+                  }
+                </div>
               </td>
               <td class="py-4 px-4">
-                <div class="flex items-center justify-end gap-2">
-                  <p-button [icon]="device.isOn ? 'pi pi-power-off' : 'pi pi-bolt'" [severity]="device.isOn ? 'secondary' : 'success'" [rounded]="true" [text]="true" (click)="toggleDeviceStatus(device)" aria-label="conmutar relé"></p-button>
-                  <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (click)="onDelete(device.id)" aria-label="eliminar dispositivo"></p-button>
+                <div class="flex items-center justify-end gap-1">
+                  <p-button
+                    icon="pi pi-eye"
+                    severity="secondary"
+                    [rounded]="true"
+                    [text]="true"
+                    (onClick)="openDetails(device)"
+                    aria-label="ver detalles"
+                  />
+                  <p-button
+                    icon="pi pi-pencil"
+                    severity="primary"
+                    [rounded]="true"
+                    [text]="true"
+                    (onClick)="openEdit(device)"
+                    aria-label="editar nombre"
+                  />
+                  <p-button
+                    [icon]="device.isOn ? 'pi pi-power-off' : 'pi pi-bolt'"
+                    [severity]="device.isOn ? 'secondary' : 'success'"
+                    [rounded]="true"
+                    [text]="true"
+                    (onClick)="toggleDeviceStatus(device)"
+                    aria-label="conmutar relé"
+                  />
+                  <p-button
+                    icon="pi pi-trash"
+                    severity="danger"
+                    [rounded]="true"
+                    [text]="true"
+                    (onClick)="onDelete(device.id)"
+                    aria-label="eliminar dispositivo"
+                  />
                 </div>
               </td>
             </tr>
@@ -88,3 +123,66 @@
 
   </div>
 </div>
+
+<!-- Diálogo: detalles del dispositivo -->
+<p-dialog
+  header="Detalles del dispositivo"
+  [modal]="true"
+  [visible]="detailsDialogVisible()"
+  (visibleChange)="detailsDialogVisible.set($event)"
+  [style]="{ width: '28rem' }"
+>
+  @if (selectedDevice(); as device) {
+    <div class="flex flex-col gap-3 text-sm pt-2">
+      <p class="flex justify-between">
+        <span class="font-semibold text-surface-300">Nombre</span>
+        <span class="text-surface-100">{{ device.name }}</span>
+      </p>
+      <p class="flex justify-between">
+        <span class="font-semibold text-surface-300">Dirección MAC</span>
+        <span class="text-surface-100 font-mono uppercase">{{ device.macAddress }}</span>
+      </p>
+      <p class="flex justify-between">
+        <span class="font-semibold text-surface-300">Estado</span>
+        <span class="text-surface-100">{{ device.isOn ? 'Activo' : 'Apagado' }}</span>
+      </p>
+      <p class="flex justify-between">
+        <span class="font-semibold text-surface-300">Tipo</span>
+        <span class="text-surface-100">{{ device.simulated ? 'Simulado' : 'Físico' }}</span>
+      </p>
+    </div>
+  }
+</p-dialog>
+
+<!-- Diálogo: edición de nombre del dispositivo -->
+<p-dialog
+  header="Editar dispositivo"
+  [modal]="true"
+  [visible]="editDialogVisible()"
+  (visibleChange)="editDialogVisible.set($event)"
+  [style]="{ width: '28rem' }"
+>
+  <p-fluid>
+    <form [formGroup]="editDeviceForm" (ngSubmit)="saveDeviceName()" class="flex flex-col gap-4 pt-2">
+      <div class="flex flex-col gap-1">
+        <label for="editDeviceName" class="text-sm font-semibold text-surface-300">Nombre del dispositivo</label>
+        <input
+          id="editDeviceName"
+          pInputText
+          formControlName="name"
+          autocomplete="off"
+        />
+        @if (editDeviceForm.controls.name.touched && editDeviceForm.controls.name.invalid) {
+          <small class="text-red-400 text-xs">El nombre es obligatorio (mínimo 3 caracteres).</small>
+        }
+      </div>
+
+      <p-button
+        type="submit"
+        label="Guardar cambios"
+        icon="pi pi-save"
+        [loading]="isSavingEdit()"
+      />
+    </form>
+  </p-fluid>
+</p-dialog>
