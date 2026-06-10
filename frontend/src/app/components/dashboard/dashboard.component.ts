@@ -168,8 +168,12 @@ export default class DashboardComponent {
 
 		effect(() => {
 			if (this.analyticsError() !== null) {
-				if (this._analyticsErrorTimer !== null) clearTimeout(this._analyticsErrorTimer);
-				this._analyticsErrorTimer = window.setTimeout(() => this.analyticsError.set(null), 8000);
+				if (this._analyticsErrorTimer !== null)
+					clearTimeout(this._analyticsErrorTimer);
+				this._analyticsErrorTimer = window.setTimeout(
+					() => this.analyticsError.set(null),
+					8000,
+				);
 			}
 		});
 

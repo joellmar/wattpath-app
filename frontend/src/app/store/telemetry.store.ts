@@ -192,6 +192,12 @@ export const TelemetryStore = signalStore(
 				),
 			),
 
+			// Vuelca el store a su estado vacío inicial: usado al cerrar sesión
+			// para evitar que un segundo usuario vea datos cacheados del anterior.
+			reset(): void {
+				patchState(store, initialState);
+			},
+
 			// Escuchamos el WebSocket de forma reactiva según la MAC seleccionada
 			connectTelemetry: rxMethod<string | null>(
 				pipe(

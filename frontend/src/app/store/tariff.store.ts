@@ -173,6 +173,12 @@ export const TariffStore = signalStore(
 			),
 		),
 
+		// Vuelca el store a su estado vacío inicial: usado al cerrar sesión
+		// para evitar que un segundo usuario vea tarifas cacheadas del anterior.
+		reset(): void {
+			patchState(store, initialState);
+		},
+
 		// Helpers síncronos para actualizar el estado desde componentes sin HTTP
 		setCatalogTariff(updated: TariffResponse): void {
 			const catalog = store

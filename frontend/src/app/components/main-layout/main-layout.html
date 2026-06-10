@@ -1,0 +1,90 @@
+<div class="flex flex-col h-dvh overflow-hidden bg-surface-950 text-surface-50">
+
+  <!-- ═══════════════════════ HEADER ═══════════════════════ -->
+  <header class="h-16 flex-shrink-0 flex items-center justify-between px-6
+                 border-b border-surface-800 bg-surface-950/95 z-10">
+
+    <!-- Marca -->
+    <div class="flex items-center gap-3">
+      <i class="pi pi-bolt text-primary text-xl"></i>
+      <span class="text-lg font-bold tracking-tight">Wattimizer</span>
+    </div>
+
+    <!-- Usuario activo + botón de cierre de sesión -->
+    <div class="flex items-center gap-4">
+      <span class="hidden sm:flex items-center gap-2 text-sm text-surface-300">
+        <i class="pi pi-user"></i>
+        {{ username }}
+      </span>
+      <p-button
+        label="Cerrar sesión"
+        icon="pi pi-sign-out"
+        severity="danger"
+        [text]="true"
+        size="small"
+        (onClick)="logout()"
+      />
+    </div>
+  </header>
+
+  <!-- ═══════════════════════ CUERPO ═══════════════════════ -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- ── Sidebar izquierdo (solo escritorio) ── -->
+    <!--
+      hidden md:flex: en móvil el sidebar desaparece por completo para que
+      el área de contenido ocupe el 100 % del viewport.
+    -->
+    <aside class="hidden md:flex flex-col w-72 flex-shrink-0
+                  border-r border-surface-800 bg-surface-900/80 py-4">
+
+      <nav class="flex flex-col gap-1 px-3">
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="bg-surface-700/50 text-primary font-semibold"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg
+                 text-surface-200 hover:bg-surface-800 transition-colors"
+        >
+          <i class="pi pi-chart-line text-base"></i>
+          <span>Dashboard</span>
+        </a>
+
+        <a
+          routerLink="/devices"
+          routerLinkActive="bg-surface-700/50 text-primary font-semibold"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg
+                 text-surface-200 hover:bg-surface-800 transition-colors"
+        >
+          <i class="pi pi-microchip text-base"></i>
+          <span>Mis dispositivos</span>
+        </a>
+
+        <a
+          routerLink="/tariffs"
+          routerLinkActive="bg-surface-700/50 text-primary font-semibold"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg
+                 text-surface-200 hover:bg-surface-800 transition-colors"
+        >
+          <i class="pi pi-euro text-base"></i>
+          <span>Tarifas eléctricas</span>
+        </a>
+
+        <a
+          routerLink="/alerts"
+          routerLinkActive="bg-surface-700/50 text-primary font-semibold"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg
+                 text-surface-200 hover:bg-surface-800 transition-colors"
+        >
+          <i class="pi pi-bell text-base"></i>
+          <span>Alertas</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- ── Área de contenido principal ── -->
+    <main class="flex-1 overflow-y-auto p-6 lg:p-8">
+      <router-outlet />
+    </main>
+
+  </div>
+</div>

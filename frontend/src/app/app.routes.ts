@@ -11,34 +11,43 @@ export const routes: Routes = [
 		loadComponent: () => import("./components/register/register.component"),
 	},
 	{
-		path: "tariffs",
-		loadComponent: () => import("./components/tariff/tariff.component"),
-		canActivate: [authGuard],
-	},
-	{
-		path: "devices",
-		loadComponent: () => import("./components/devices/devices.component"),
-		canActivate: [authGuard],
-	},
-	{
-		path: "alerts",
-		loadComponent: () => import("./components/alerts/alerts.component"),
-		canActivate: [authGuard],
-	},
-	{
-		path: "dashboard",
-		loadComponent: () => import("./components/dashboard/dashboard.component"),
-		canActivate: [authGuard],
-	},
-	{
 		path: "auth/oauth/callback",
 		loadComponent: () =>
 			import("./components/oauth-callback/oauth-callback.component"),
 	},
 	{
 		path: "",
-		redirectTo: "dashboard",
-		pathMatch: "full",
+		loadComponent: () =>
+			import("./components/main-layout/main-layout.component"),
+		// canActivate valida la entrada inicial al chasis; canActivateChild
+		// re-valida la sesión en cada navegación interna entre rutas hijas,
+		// protegiendo accesos directos por URL con token ya expirado.
+		canActivate: [authGuard],
+		canActivateChild: [authGuard],
+		children: [
+			{
+				path: "dashboard",
+				loadComponent: () =>
+					import("./components/dashboard/dashboard.component"),
+			},
+			{
+				path: "devices",
+				loadComponent: () => import("./components/devices/devices.component"),
+			},
+			{
+				path: "tariffs",
+				loadComponent: () => import("./components/tariff/tariff.component"),
+			},
+			{
+				path: "alerts",
+				loadComponent: () => import("./components/alerts/alerts.component"),
+			},
+			{
+				path: "",
+				redirectTo: "dashboard",
+				pathMatch: "full",
+			},
+		],
 	},
 	{
 		path: "**",

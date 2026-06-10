@@ -21,10 +21,26 @@ const WattimizerPreset = definePreset(Aura, {
 		message: {
 			colorScheme: {
 				dark: {
-					success: { background: "{green.700}", color: "{white}", borderColor: "{green.600}" },
-					info:    { background: "{blue.700}",  color: "{white}", borderColor: "{blue.600}"  },
-					warn:    { background: "{yellow.700}", color: "{white}", borderColor: "{yellow.600}" },
-					error:   { background: "{red.800}",   color: "{white}", borderColor: "{red.700}"   },
+					success: {
+						background: "{green.700}",
+						color: "{white}",
+						borderColor: "{green.600}",
+					},
+					info: {
+						background: "{blue.700}",
+						color: "{white}",
+						borderColor: "{blue.600}",
+					},
+					warn: {
+						background: "{yellow.700}",
+						color: "{white}",
+						borderColor: "{yellow.600}",
+					},
+					error: {
+						background: "{red.800}",
+						color: "{white}",
+						borderColor: "{red.700}",
+					},
 				},
 			},
 		},
@@ -32,9 +48,9 @@ const WattimizerPreset = definePreset(Aura, {
 			colorScheme: {
 				dark: {
 					success: { background: "{green.700}", color: "{white}" },
-					info:    { background: "{blue.700}",  color: "{white}" },
-					warn:    { background: "{yellow.700}", color: "{white}" },
-					error:   { background: "{red.800}",   color: "{white}" },
+					info: { background: "{blue.700}", color: "{white}" },
+					warn: { background: "{yellow.700}", color: "{white}" },
+					error: { background: "{red.800}", color: "{white}" },
 				},
 			},
 		},

@@ -29,14 +29,20 @@ export default class AlertsComponent {
 		effect(() => {
 			if (this.successMessage() !== null) {
 				if (this._successTimer !== null) clearTimeout(this._successTimer);
-				this._successTimer = window.setTimeout(() => this.successMessage.set(null), 5000);
+				this._successTimer = window.setTimeout(
+					() => this.successMessage.set(null),
+					5000,
+				);
 			}
 		});
 
 		effect(() => {
 			if (this.errorMessage() !== null) {
 				if (this._errorTimer !== null) clearTimeout(this._errorTimer);
-				this._errorTimer = window.setTimeout(() => this.errorMessage.set(null), 7000);
+				this._errorTimer = window.setTimeout(
+					() => this.errorMessage.set(null),
+					7000,
+				);
 			}
 		});
 	}
