@@ -22,10 +22,12 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
@@ -36,6 +38,11 @@ public class SecurityConfig {
 
     @Value("${app.oauth2.frontend-callback-uri}")
     private String frontendCallbackUri;
+
+    // Orígenes CORS inyectados desde app.cors.allowed-origins (application.properties)
+    // En producción Docker se sobreescribe con APP_CORS_ALLOWED_ORIGINS del compose.
+    @Value("${app.cors.allowed-origins:http://localhost:4200}")
+    private String corsAllowedOrigins;
 
     public SecurityConfig(
             StoreProperties storeProperties,
@@ -55,7 +62,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
+                    List<String> origins = Arrays.stream(corsAllowedOrigins.split(","))
+                            .map(String::trim)
+                            .toList();
+                    config.setAllowedOrigins(origins);
                     config.setAllowedMethods(Collections.singletonList("*"));
                     config.setAllowCredentials(true);
                     config.setAllowedHeaders(Collections.singletonList("*"));

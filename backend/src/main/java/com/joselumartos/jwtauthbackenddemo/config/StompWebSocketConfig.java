@@ -1,5 +1,6 @@
 package com.joselumartos.jwtauthbackenddemo.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -10,10 +11,15 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+    // Misma lista de orígenes que el filtro CORS de SecurityConfig.
+    // El handshake WebSocket aplica su propia validación de Origin independiente.
+    @Value("${app.cors.allowed-origins:http://localhost:4200}")
+    private String corsAllowedOrigins;
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // La puerta de entrada. Angular se conectará a ws://localhost:8080/ws-iot
-        registry.addEndpoint("/ws-iot").setAllowedOriginPatterns("*");
+        String[] origins = corsAllowedOrigins.split(",");
+        registry.addEndpoint("/ws-iot").setAllowedOriginPatterns(origins);
     }
 
     @Override
