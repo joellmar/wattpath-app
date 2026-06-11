@@ -32,6 +32,15 @@ erDiagram
         timestamp updated_at
     }
 
+    federated_identities {
+        bigint id PK
+        bigint user_id FK
+        varchar provider
+        varchar provider_subject UK
+        varchar email_at_login
+        timestamp created_at
+    }
+
     devices {
         bigint id PK
         bigint user_id FK
@@ -93,6 +102,7 @@ erDiagram
     }
 
     users ||--o{ devices : posee
+    users ||--o{ federated_identities : vincula_oauth
     users }o--|| tariffs : tiene_tarifa
     devices ||--o{ readings : genera
     users ||--o{ alerts : recibe
@@ -118,7 +128,22 @@ Entidad: `UserEntity`.
 
 `UserEntity` implementa `UserDetails`, por eso Spring Security puede usar la propia entidad para autenticar y leer authorities.
 
-### 3.2. `devices`
+### 3.2. `federated_identities`
+
+Entidad: `FederatedIdentity`.
+
+| Columna | Descripcion |
+| --- | --- |
+| `id` | Identificador interno de la vinculacion. |
+| `user_id` | Usuario local asociado. |
+| `provider` | Proveedor OAuth2, por ejemplo Google o GitHub. |
+| `provider_subject` | Identificador unico del usuario dentro del proveedor. |
+| `email_at_login` | Email reportado por el proveedor en el momento del login. |
+| `created_at` | Fecha de creacion de la vinculacion. |
+
+La restriccion unica `uk_federated_provider_subject` sobre `provider + provider_subject` evita colisiones entre cuentas externas. Esta tabla permite que el login OAuth2 no dependa solo del email, que puede cambiar o coincidir entre proveedores distintos.
+
+### 3.3. `devices`
 
 Entidad: `Device`.
 
@@ -133,7 +158,7 @@ Entidad: `Device`.
 
 La MAC es el campo natural para relacionar mensajes MQTT con dispositivos registrados.
 
-### 3.3. `readings`
+### 3.4. `readings`
 
 Entidad: `Reading`.
 
@@ -147,7 +172,7 @@ Entidad: `Reading`.
 
 La clave compuesta `time + device_id` permite varias lecturas en el tiempo por dispositivo. En el repositorio actual, `ReadingRepository` extiende `JpaRepository<Reading, Long>`, aunque la entidad usa `@IdClass(ReadingId.class)`. Funciona para las queries declaradas, pero seria mas correcto tiparlo con la clave compuesta si se evoluciona el repositorio.
 
-### 3.4. `tariffs`
+### 3.5. `tariffs`
 
 Entidad: `Tariff`.
 
@@ -161,7 +186,7 @@ Entidad: `Tariff`.
 
 La tarifa no almacena horarios. Solo almacena precios y potencias. Los horarios viven en `tariff_calendar_slots`.
 
-### 3.5. `periods`
+### 3.6. `periods`
 
 Entidad: `Period`.
 
@@ -173,7 +198,7 @@ Entidad: `Period`.
 
 Tiene indice unico por `tariff_id + period_code` para que una tarifa no tenga dos precios para el mismo periodo.
 
-### 3.6. `tariff_contracted_powers`
+### 3.7. `tariff_contracted_powers`
 
 Entidad: `TariffContractedPower`.
 
@@ -185,7 +210,7 @@ Entidad: `TariffContractedPower`.
 
 La validacion de potencia ascendente para `3.0TD`, `6.1TD` y `6.2TD` se hace en `TariffService`, no con un `CHECK` SQL, porque depende de comparar varias filas de la misma tarifa.
 
-### 3.7. `tariff_calendar_slots`
+### 3.8. `tariff_calendar_slots`
 
 Entidad: `TariffCalendarSlot`.
 
@@ -212,7 +237,7 @@ El script `tariffs-td-schema.sql` anade:
 - indice unico `ux_tariff_calendar_slots_lookup`;
 - indice `ix_tariff_calendar_slots_period_code`.
 
-### 3.8. `alerts`
+### 3.9. `alerts`
 
 Entidad: `Alert`.
 

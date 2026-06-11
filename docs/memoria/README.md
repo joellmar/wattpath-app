@@ -89,7 +89,6 @@ Desarrollar una aplicacion web full-stack que permita monitorizar consumos elect
 ### 2.3. Gestion del trabajo
 
 - **Repositorio:** este repositorio contiene backend, frontend, infraestructura Docker y documentacion.
-- **Rama de documentacion actual:** `cursor/documentaci-n-t-cnica-del-proyecto-b94c`.
 - **Flujo usado:** ramas de funcionalidad y commits descriptivos. En el historial reciente se observan cambios de CI/CD, configuracion de Mosquitto, ajustes de OAuth2, seguridad de rutas y guias de despliegue.
 - **Kanban:** para la entrega academica se recomienda adjuntar una captura externa del tablero con las columnas `Backlog`, `Por hacer`, `En progreso`, `En revision` y `Hecho`.
 

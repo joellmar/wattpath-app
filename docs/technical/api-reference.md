@@ -95,7 +95,7 @@ Ejemplo de salida:
 
 ```json
 {
-  "statusCode": 200,
+  "statusCode": "200 OK",
   "jwt": "eyJhbGciOi..."
 }
 ```
