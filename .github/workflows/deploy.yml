@@ -81,8 +81,8 @@ jobs:
               echo "PROD_ADMIN_KEY=${{ secrets.PROD_ADMIN_KEY }}"
               echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}"
               echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}"
-              echo "GITHUB_CLIENT_ID=${{ secrets.GITHUB_CLIENT_ID }}"
-              echo "GITHUB_CLIENT_SECRET=${{ secrets.GITHUB_CLIENT_SECRET }}"
+              echo "GH_OAUTH_CLIENT_ID=${{ secrets.GH_OAUTH_CLIENT_ID }}"
+              echo "GH_OAUTH_CLIENT_SECRET=${{ secrets.GH_OAUTH_CLIENT_SECRET }}"
               echo "OAUTH2_FRONTEND_CALLBACK_URI=${{ secrets.OAUTH2_FRONTEND_CALLBACK_URI }}"
               echo "APP_CORS_ALLOWED_ORIGINS=${{ secrets.APP_CORS_ALLOWED_ORIGINS }}"
             } > .env
