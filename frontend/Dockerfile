@@ -1,15 +1,17 @@
-# ETAPA 1: Construcción
+# ETAPA 1: Compilar Angular en modo producción
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
+# --legacy-peer-deps: resuelve conflictos de versiones cruzadas de PrimeNG 21
 RUN npm ci --legacy-peer-deps
 COPY . .
-# Compila Angular en modo producción
-RUN npm run build --configuration=production
+# Los dobles guiones pasan el flag a ng build, no a npm
+RUN npm run build -- --configuration=production
 
-# ETAPA 2: Servidor estático
+# ETAPA 2: Servidor estático ligero con enrutamiento SPA
 FROM nginx:alpine
-# Copiamos los archivos compilados de la carpeta browser a la ruta de Nginx
 COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
+# Sobrescribe el default.conf de la imagen para activar try_files (SPA routing)
+COPY nginx-spa.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
