@@ -27,7 +27,9 @@ apt install -y curl ca-certificates git
 
 ---
 
-## 2. Instalar Docker y Docker Compose Plugin
+## 2. Instalar Docker y Docker Compose
+
+Ubuntu 24.04 LTS incluye `docker-compose-v2` en sus repositorios oficiales. Para instalar Docker Engine y el plugin oficial de Docker Inc.:
 
 ```bash
 install -m 0755 -d /etc/apt/keyrings
@@ -41,8 +43,16 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
   | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 apt update
-apt install -y docker-ce docker-ce-cli containerd.io \
-               docker-buildx-plugin docker-compose-plugin
+apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
+```
+
+> **Posible conflicto en Ubuntu 24.04:** Si aparece el error `trying to overwrite '/usr/libexec/docker/cli-plugins/docker-compose'` al instalar `docker-compose-plugin`, no es crítico — Ubuntu ya tiene `docker-compose-v2` instalado y es compatible. Ignora el error.
+
+Activa el daemon de Docker (no arranca automáticamente tras la instalación):
+
+```bash
+systemctl enable docker
+systemctl start docker
 
 # Verificar
 docker version
@@ -54,7 +64,7 @@ docker compose version
 ## 3. Configurar el cortafuegos (UFW)
 
 El objetivo es exponer solo los puertos necesarios.
-El puerto `8080` (backend) y `5432` (base de datos) **nunca** deben abrirse al exterior.
+Los puertos `8080` (backend) y `5432` (base de datos) **nunca** deben abrirse al exterior.
 
 ```bash
 ufw default deny incoming
@@ -97,10 +107,11 @@ apt install -y certbot
 # Crear el directorio webroot que comparte con el contenedor Nginx
 mkdir -p /var/www/certbot
 
-# ⚠️ Bootstrap: en el primer arranque, Nginx aún no está corriendo.
-# Usa el modo standalone (Certbot levanta un servidor HTTP temporal en el puerto 80).
-# Asegúrate de que el puerto 80 está libre antes de ejecutar esto.
+# Asegúrate de que el puerto 80 está libre.
+# Si hay contenedores Docker escuchando en 80, páralos primero:
+docker stop $(docker ps -q) 2>/dev/null || true
 
+# Modo standalone: Certbot levanta un servidor HTTP temporal en el puerto 80
 certbot certonly --standalone \
   -d wattimizer.com \
   -d www.wattimizer.com \
@@ -108,70 +119,141 @@ certbot certonly --standalone \
   --non-interactive \
   --agree-tos \
   --email tu-email@dominio.com
-
-# Verificar que se han generado los certificados
-ls /etc/letsencrypt/live/wattimizer.com/
 ```
 
-Configura la renovación automática. Certbot la instala con el paquete;
-comprueba que el timer está activo:
+> **Si ya existe un certificado parcial** (solo con algunos dominios), añade `--expand`
+> para ampliar el certificado existente con los dominios que faltan:
+> ```bash
+> certbot certonly --standalone --expand \
+>   -d wattimizer.com -d www.wattimizer.com -d api.wattimizer.com \
+>   --non-interactive --agree-tos --email tu-email@dominio.com
+> ```
 
 ```bash
+# Verificar que se han generado los certificados
+ls /etc/letsencrypt/live/wattimizer.com/
+
+# Comprobar que el timer de renovación automática está activo
 systemctl status certbot.timer
 ```
 
-Para la renovación con Nginx activo (post primer despliegue), Certbot usará
-webroot (`/var/www/certbot`). Edita `/etc/letsencrypt/renewal/wattimizer.com.conf`
-y cambia `authenticator = standalone` por `authenticator = webroot` y añade
-`webroot_path = /var/www/certbot` después del primer despliegue.
+Tras el primer despliegue completo, cambia el método de renovación a webroot para que
+Certbot renueve sin parar Nginx. Edita `/etc/letsencrypt/renewal/wattimizer.com.conf`
+y asegúrate de que el bloque `[renewalparams]` contiene:
 
----
+```ini
+authenticator = webroot
+webroot_path = /var/www/certbot
+```
 
-## 6. Clonar el repositorio
-
+Prueba la renovación:
 ```bash
-git clone https://github.com/TU_USUARIO/wattimizer-app.git /root/wattimizer-app
-cd /root/wattimizer-app
+certbot renew --dry-run
 ```
 
 ---
 
-## 7. Generar el `password_file` de Mosquitto
+## 6. Registrar las OAuth Apps de producción
+
+Antes de continuar, registra las aplicaciones OAuth2 en Google y GitHub con las URLs
+de producción. Los valores obtenidos van al `.env` en el paso 8.
+
+### Google OAuth2
+
+1. Ve a [console.cloud.google.com](https://console.cloud.google.com) → APIs y servicios → Credenciales → Crear credencial → ID de cliente OAuth 2.0.
+2. Tipo de aplicación: **Aplicación web**.
+3. Rellena:
+
+| Campo | Valor |
+|---|---|
+| Orígenes de JavaScript autorizados | `https://wattimizer.com` y `https://www.wattimizer.com` |
+| URIs de redireccionamiento autorizados | `https://wattimizer.com/login/oauth2/code/google` |
+
+### GitHub OAuth2
+
+Crea una OAuth App **exclusiva para producción** (no reutilices la de desarrollo):
+
+1. Ve a GitHub → Settings → Developer settings → OAuth Apps → **New OAuth App**.
+2. Rellena:
+
+| Campo | Valor |
+|---|---|
+| Application name | `Wattimizer Production` |
+| Homepage URL | `https://wattimizer.com` |
+| Authorization callback URL | `https://wattimizer.com/login/oauth2/code/github` |
+
+---
+
+## 7. Clonar el repositorio
+
+```bash
+git clone https://github.com/joellmar/wattpath-app.git /root/wattimizer-app
+cd /root/wattimizer-app
+```
+
+> **Si el directorio ya existe** de un despliegue anterior, no vuelvas a clonar.
+> Actualiza en su lugar:
+> ```bash
+> cd /root/wattimizer-app
+> git fetch origin main
+> git reset --hard origin/main
+> ```
+
+---
+
+## 8. Generar el `password_file` de Mosquitto
 
 El archivo del repositorio contiene credenciales de desarrollo.
-**Regenerar en el VPS** con las credenciales de producción:
+**Regenerar en el VPS** con las credenciales de producción.
+
+> El contenedor Docker necesita TTY para pedir la contraseña de forma interactiva.
+> Usa el flag `-it`:
 
 ```bash
 cd /root/wattimizer-app
 
-# Crear el password_file con el usuario del backend.
-# Mosquitto usará este usuario con su contraseña de producción.
-docker run --rm \
+# Crear el password_file (-c lo crea desde cero, sobrescribe el anterior)
+docker run --rm -it \
   -v "$(pwd)/mosquitto/config:/mosquitto/config" \
   eclipse-mosquitto:2.1.2-alpine \
-  mosquitto_passwd -c /mosquitto/config/password_file "$PROD_MQTT_USER"
-# El comando pedirá la contraseña de forma interactiva (2 veces).
-
-# Si también necesitas un usuario independiente para el Shelly:
-docker run --rm \
-  -v "$(pwd)/mosquitto/config:/mosquitto/config" \
-  eclipse-mosquitto:2.1.2-alpine \
-  mosquitto_passwd /mosquitto/config/password_file shelly-gateway
+  mosquitto_passwd -c /mosquitto/config/password_file wattimizer-gateway
+# Introduce la contraseña cuando se solicite (2 veces). Guárdala: es PROD_MQTT_PASSWORD.
 ```
 
-> El `password_file` ya está en `.gitignore`. **Nunca** lo subas al repositorio.
+Si prefieres pasar la contraseña sin prompt interactivo (útil en scripts):
+
+```bash
+docker run --rm \
+  -v "$(pwd)/mosquitto/config:/mosquitto/config" \
+  eclipse-mosquitto:2.1.2-alpine \
+  mosquitto_passwd -c -b /mosquitto/config/password_file wattimizer-gateway "TU_CONTRASEÑA"
+```
+
+> El `password_file` está en `.gitignore`. **Nunca** lo subas al repositorio.
+>
+> Si el Shelly usa el mismo usuario y contraseña que el backend, no es necesario
+> crear un segundo usuario.
 
 ---
 
-## 8. Crear el archivo `.env` de producción
+## 9. Crear el archivo `.env` de producción
 
 ```bash
 cp .env.example .env
-nano .env  # O usa tu editor preferido
+nano .env
 ```
 
-Rellena **todos** los valores vacíos del archivo.
-Consulta `.env.example` para la descripción de cada variable.
+Rellena **todos** los valores vacíos. Consulta `.env.example` para la descripción
+de cada variable. Presta atención a:
+
+- `PROD_MQTT_USER` y `PROD_MQTT_PASSWORD` deben coincidir exactamente con lo que
+  generaste en el paso anterior con `mosquitto_passwd`.
+- `GH_OAUTH_CLIENT_ID` y `GH_OAUTH_CLIENT_SECRET` corresponden a la OAuth App de
+  GitHub **de producción** creada en el paso 6.
+  > GitHub reserva el prefijo `GITHUB_` para sus propias variables internas.
+  > Por eso las variables se llaman `GH_OAUTH_*` y no `GITHUB_*`.
+- `APP_CORS_ALLOWED_ORIGINS` se escribe todo en una línea, separado por coma y sin espacios:
+  `https://wattimizer.com,https://www.wattimizer.com`
 
 ```bash
 chmod 600 .env  # Solo root puede leerlo
@@ -179,173 +261,179 @@ chmod 600 .env  # Solo root puede leerlo
 
 ---
 
-## 9. Primer arranque (inicio en frío)
+## 10. Primer arranque (inicio en frío)
 
-El backend necesita levantar antes para que Hibernate cree las tablas,
-y el broker debe estar activo para recibir MQTT:
+Arranca todos los servicios de una vez. Docker Compose construye las imágenes y
+levanta los contenedores en el orden correcto según `depends_on`.
+El backend puede fallar en el primer intento si TimescaleDB aún no está listo;
+`restart: always` lo recuperará automáticamente.
 
 ```bash
 cd /root/wattimizer-app
+docker compose --env-file .env up -d --build --remove-orphans
 
-# Paso 1: arrancar solo la base de datos y el broker
-docker compose --env-file .env up -d timescaledb mosquitto
+# Esperar a que Spring Boot termine de inicializar y Hibernate cree las tablas
+sleep 40
 
-# Esperar ~10 segundos a que TimescaleDB esté listo para aceptar conexiones
-sleep 10
-
-# Paso 2: arrancar el backend para que Hibernate cree las tablas
-docker compose --env-file .env up -d backend
-
-# Esperar ~15 segundos a que Spring Boot termine de inicializar y crear tablas
-sleep 15
+# Verificar que todos los contenedores están activos
+docker compose ps
 ```
+
+Todos deben aparecer con estado `Up`. Si el backend aparece en `Restarting`,
+espera 30 segundos más y vuelve a comprobar — el backend puede tardar varios
+intentos si TimescaleDB no estaba completamente listo al primer arranque.
 
 ---
 
-## 10. Inicializar la base de datos (orden exacto de scripts SQL)
+## 11. Inicializar la base de datos (orden exacto de scripts SQL)
 
 Ejecutar los scripts en este orden. Si alguno falla, revisar el log antes de continuar.
 
+> Los scripts de extensiones e hypertable se encuentran en `dev-seed/`, no en la raíz de `db/`.
+
 ```bash
-DB_NAME=${DB_NAME:-wattimizer_db}
-DB_USER=${DB_USER:-postgres}
+PSQL="docker compose exec -T timescaledb psql -U postgres -d wattimizer_db"
 
-PSQL="docker compose exec -T timescaledb psql -U $DB_USER -d $DB_NAME"
+# 1. Extensiones TimescaleDB y pgcrypto
+$PSQL < backend/src/main/resources/db/dev-seed/00-extensions.sql
 
-# 1. Extensiones (TimescaleDB + pgcrypto)
-$PSQL < backend/src/main/resources/db/00-extensions.sql
-
-# 2. Hypertable de lecturas (ejecutar ANTES de que entren datos en readings)
-$PSQL < backend/src/main/resources/db/01-hypertable.sql
+# 2. Hypertable de lecturas
+# ⚠️ Debe ejecutarse ANTES de que entren datos en la tabla readings.
+# Si la tabla ya tiene datos (el backend recibió MQTT antes), usa migrate_data:
+$PSQL < backend/src/main/resources/db/dev-seed/01-hypertable.sql
+# Si falla con "table is not empty", ejecuta esto en su lugar:
+# $PSQL -c "SELECT create_hypertable('readings', 'time', migrate_data => true);"
 
 # 3. CHECK constraints del modelo tarifario (Hibernate no los genera)
+# El script es idempotente: si ya existen los constraints, los omite sin error.
 $PSQL < backend/src/main/resources/db/tariffs-td-schema.sql
 
 # 4. Datos de referencia: calendario CNMC tarifas TD
 $PSQL < backend/src/main/resources/db/seed-tariff-calendar-slots.sql
 
-# 5. (Solo si se necesita en producción) Seeds de usuarios y dispositivos de desarrollo:
-# NO ejecutar en producción salvo que se quiera el usuario demo.
+# 5. Seeds de desarrollo — NO ejecutar en producción salvo necesidad explícita
 # $PSQL < backend/src/main/resources/db/dev-seed/03-seed-users-dev.sql
 # $PSQL < backend/src/main/resources/db/dev-seed/04-seed-device-shelly.sql
 # $PSQL < backend/src/main/resources/db/dev-seed/05-seed-device-simulation.sql
 
-# 6. Resincronizar secuencias después de los seeds
+# 6. Resincronizar secuencias de identidad (siempre el último)
 $PSQL < backend/src/main/resources/db/prod/99-resync-sequences.sql
 ```
 
----
-
-## 11. Levantar todos los servicios
+Confirma que las 9 tablas están creadas:
 
 ```bash
-cd /root/wattimizer-app
-docker compose --env-file .env up -d --build
-docker compose ps   # Todos deben estar "Up"
+docker compose exec -T timescaledb psql -U postgres -d wattimizer_db -c "\dt"
 ```
+
+Deben aparecer: `alerts`, `devices`, `federated_identities`, `periods`, `readings`,
+`tariff_calendar_slots`, `tariff_contracted_powers`, `tariffs`, `users`.
+
+> Si faltan `tariff_contracted_powers`, `tariff_calendar_slots` o `federated_identities`,
+> el backend aún no ha terminado de inicializar. Espera y comprueba sus logs:
+> ```bash
+> docker compose logs backend --tail=5 | grep "Started\|ERROR"
+> ```
+> Cuando veas `Started JwtAuthBackendDemoApplication`, Hibernate habrá creado las tablas.
+> Reinicia el backend si es necesario: `docker compose restart backend`
 
 ---
 
 ## 12. Verificar el despliegue
 
 ```bash
-# Comprobar que Nginx responde con HTTPS
+# Nginx responde con HTTPS (debe devolver 200)
 curl -I https://wattimizer.com
 
-# Comprobar que la API responde (endpoint público)
-curl https://wattimizer.com/api/v1/auth/ping 2>/dev/null || \
-  curl https://api.wattimizer.com/api/v1/auth/ping
+# La API responde — debe devolver 401 (credenciales incorrectas, pero el backend funciona)
+curl -s -o /dev/null -w "%{http_code}" \
+  -X POST https://wattimizer.com/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test","password":"test"}'
 
-# Revisar logs del backend por errores de arranque
-docker compose logs backend --tail=50
+# Revisar logs del backend
+docker compose logs backend --since=5m | grep -v "WebSocketSession\|MessageBroker"
 
-# Revisar logs de Nginx
+# Revisar logs de Nginx (errores de proxy)
 docker compose logs nginx --tail=20
-
-# Test de conexión MQTT (requiere mosquitto-clients en el host o herramienta externa)
-# mosquitto_pub -h wattimizer.com -p 1883 -u "$PROD_MQTT_USER" \
-#   -P "$PROD_MQTT_PASSWORD" -t test/ping -m "hello"
 ```
+
+> **Si la API devuelve 502:** Nginx puede tener cacheada la IP antigua del backend
+> si el contenedor fue reiniciado. Solución: `docker compose restart nginx`
 
 ---
 
 ## 13. Crear el usuario administrador de producción
 
-Si no se ejecutaron los seeds de desarrollo, el primer usuario admin se crea via API:
-
 ```bash
 curl -s -X POST https://wattimizer.com/api/v1/auth/register/admin \
   -H "Content-Type: application/json" \
-  -H "X-Admin-Key: TU_ADMIN_KEY" \
+  -H "X-Wattimizer-Admin-Secret: TU_PROD_ADMIN_KEY" \
   -d '{"username":"admin","password":"contraseña_segura"}'
 ```
+
+> La cabecera se llama `X-Wattimizer-Admin-Secret` (no `X-Admin-Key`).
+> El valor es el de `PROD_ADMIN_KEY` en tu `.env`.
+
+Si la respuesta es 200 con los datos del usuario, el sistema está listo.
+Accede a `https://wattimizer.com` y haz login con las credenciales recién creadas.
 
 ---
 
 ## 14. Configurar GitHub Secrets para los despliegues automáticos
 
 En el repositorio de GitHub, ve a **Settings → Secrets and variables → Actions**
-y crea estos secretos:
+y crea los siguientes secretos. Con estos configurados, cada `push` a `main`
+desplegará automáticamente en el VPS.
 
 | Nombre del secreto | Descripción |
 |---|---|
 | `HOST` | IP pública del VPS Hetzner |
 | `USER` | Usuario SSH (normalmente `root`) |
-| `SSH_PRIVATE_KEY` | Clave privada SSH para el acceso al VPS |
-| `DB_NAME` | Nombre de la base de datos |
-| `DB_USER` | Usuario de PostgreSQL |
+| `SSH_PRIVATE_KEY` | Clave privada SSH dedicada para CI/CD |
+| `DB_NAME` | Nombre de la base de datos (`wattimizer_db`) |
+| `DB_USER` | Usuario de PostgreSQL (`postgres`) |
 | `DB_PASSWORD` | Contraseña de PostgreSQL |
 | `PROD_MQTT_USER` | Usuario MQTT del backend |
 | `PROD_MQTT_PASSWORD` | Contraseña MQTT del backend |
-| `PROD_JWT_SECRET` | Clave para firmar JWT (256 bits mínimo) |
+| `PROD_JWT_SECRET` | Clave para firmar JWT (mín. 256 bits) |
 | `PROD_ADMIN_KEY` | Clave maestra del endpoint de registro admin |
 | `GOOGLE_CLIENT_ID` | Client ID de Google OAuth2 |
 | `GOOGLE_CLIENT_SECRET` | Client Secret de Google OAuth2 |
-| `GITHUB_CLIENT_ID` | Client ID de GitHub OAuth2 |
-| `GITHUB_CLIENT_SECRET` | Client Secret de GitHub OAuth2 |
+| `GH_OAUTH_CLIENT_ID` | Client ID de GitHub OAuth2 (prefijo `GH_OAUTH_`, no `GITHUB_`) |
+| `GH_OAUTH_CLIENT_SECRET` | Client Secret de GitHub OAuth2 |
 | `OAUTH2_FRONTEND_CALLBACK_URI` | `https://wattimizer.com/auth/oauth/callback` |
 | `APP_CORS_ALLOWED_ORIGINS` | `https://wattimizer.com,https://www.wattimizer.com` |
 
-Para generar la clave SSH en el VPS y autorizar el acceso de GitHub Actions:
+> **GitHub no permite** crear secrets con nombres que empiecen por `GITHUB_`
+> (prefijo reservado para variables internas de Actions). Por eso los secrets
+> de GitHub OAuth se llaman `GH_OAUTH_CLIENT_ID` y `GH_OAUTH_CLIENT_SECRET`.
+
+Para generar la clave SSH dedicada a CI/CD y autorizarla en el VPS:
 
 ```bash
-# En el VPS, generar un par de claves dedicado para CI/CD
+# En el VPS
 ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/github_actions -N ""
-
-# Autorizar la clave pública
 cat ~/.ssh/github_actions.pub >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 
-# Copiar la clave PRIVADA al secret SSH_PRIVATE_KEY de GitHub
+# Muestra la clave PRIVADA — pega su contenido en el secret SSH_PRIVATE_KEY
 cat ~/.ssh/github_actions
 ```
 
----
-
-## 15. Renovación del certificado SSL (post primer despliegue)
-
-Tras el primer despliegue, cambia el método de renovación a webroot:
+Para probar que el workflow funciona correctamente, haz un push vacío:
 
 ```bash
-# Editar la configuración de renovación
-nano /etc/letsencrypt/renewal/wattimizer.com.conf
+git commit --allow-empty -m "ci: trigger first automated deploy"
+git push origin main
 ```
 
-Asegúrate de que el bloque `[renewalparams]` contiene:
-```ini
-authenticator = webroot
-webroot_path = /var/www/certbot
-```
-
-Haz un test de renovación para confirmar que funciona con Nginx activo:
-```bash
-certbot renew --dry-run
-```
+Verifica el resultado en GitHub → pestaña **Actions**.
 
 ---
 
 ## Notas de seguridad pendientes
 
 - **MQTT sin TLS (1883):** el tráfico de telemetría circula sin cifrar. Migrar a `8883/TLS` o encapsular en VPN cuando el hardware Shelly lo soporte.
-- **ddl-auto=update:** permite a Hibernate modificar el esquema. Valorar cambiar a `validate` una vez el esquema esté estable en producción.
+- **ddl-auto=update:** permite a Hibernate modificar el esquema en cada arranque. Cambiar a `validate` cuando el esquema esté estable en producción.
 - **UFW + Fail2Ban:** considerar instalar `fail2ban` para proteger SSH contra fuerza bruta.
