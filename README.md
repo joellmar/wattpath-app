@@ -19,5 +19,10 @@ Wattimizer resuelve el problema de la opacidad energética en las pymes. A trav�
 * [x] Fase 4: Desarrollo Frontend
 * [x] Fase 5: Despliegue (Deploy)
 
+## 📚 Documentación
+* [Índice de documentación](docs/README.md)
+* [Memoria técnica DAW y anexos](docs/memoria-tecnica/memoria-tecnica-wattimizer.md)
+* [Guía de despliegue en Hetzner](docs/deployment/hetzner-production.md)
+
 ## 👨‍💻 Autor
 * **José Luis López Martos** - Desarrollador Full-Stack
