@@ -149,7 +149,7 @@ erDiagram
     devices ||--o{ alerts : provoca
     tariffs ||--o{ periods : define_precios
     tariffs ||--o{ tariff_contracted_powers : define_potencias
-    tariff_calendar_slots }o--|| periods : resuelve_period_code
+    tariff_calendar_slots }o--|| periods : relacion_logica_period_code
 
     users {
         bigint id PK
@@ -220,6 +220,8 @@ erDiagram
         timestamptz created_at
     }
 ```
+
+Nota importante: la relacion entre `tariff_calendar_slots` y `periods` no es una clave foranea fisica en la base de datos. Es una relacion logica: el calendario devuelve un `period_code` y los servicios lo cruzan con los periodos de la tarifa que corresponda. Se ha dibujado para explicar el flujo de resolucion, no como restriccion SQL.
 
 #### 3.1.2. Modelo relacional
 
@@ -763,6 +765,29 @@ public record TariffDto(
 ) {}
 ```
 
+DTOs anidados y entrada de tarifa privada:
+
+```java
+public record PeriodDto(
+    Long id,
+    String periodCode,
+    BigDecimal priceKwh
+) {}
+
+public record TariffContractedPowerDto(
+    Long id,
+    String periodCode,
+    BigDecimal contractedPowerKw
+) {}
+
+public record UserTariffRequest(
+    Long templateTariffId,
+    TariffDto contract
+) {}
+```
+
+`PeriodDto` transporta el precio de energia por periodo P1-P6. `TariffContractedPowerDto` transporta la potencia contratada en kW para esos mismos periodos y se usa despues en las alertas de maximetro. `UserTariffRequest` permite tres flujos: clonar una plantilla (`templateTariffId`), clonar y modificarla (`templateTariffId` + `contract`) o guardar directamente un contrato privado (`contract`).
+
 La separacion entre catalogo y tarifa privada permite que un usuario parta de una plantilla comun, pero despues tenga sus propios precios y potencias contratadas sin modificar el catalogo global.
 
 ### A.6. Alertas: `AlertController`
@@ -950,10 +975,12 @@ Diferencias:
 
 | Aspecto | `events/rpc` | `status/switch:0` |
 |---|---|---|
-| MAC | Sale de `src` del payload | Sale del topico MQTT |
+| MAC | El mapper intenta resolverla desde `src`, buscando un dispositivo ya existente | Sale del topico MQTT |
 | Timestamp | Sale de `params.ts` | Se asigna con `Instant.now()` |
-| Dispositivo inexistente | Se crea automaticamente | Debe existir previamente |
+| Dispositivo inexistente | Limitacion actual: si no existe, el flujo no recupera bien la MAC y puede acabar creando un dispositivo sin MAC util | Debe existir previamente |
 | `isOn` | No se rellena | Sale de `output` |
+
+En `events/rpc` hay que tener cuidado con la palabra "autoalta". El codigo actual de `EventsRpcMapper.mapSourceToDevice()` no crea el dispositivo a partir del `src`; solo busca la MAC en `DeviceRepository`. Despues, `ReadingService.saveEntity(EventsRpc)` crea un dispositivo si no encuentra uno, pero lo hace con la MAC que ya tenga la lectura mapeada. Si el mapper no encontro el dispositivo, esa MAC queda vacia. Por eso, para el MVP el flujo fiable de vinculacion es reclamar o registrar el dispositivo antes desde `/api/v1/devices/claim`, y dejar la mejora de autoalta real por MQTT como linea futura.
 
 La energia total llega desde Shelly en Wh y los mappers la convierten a kWh dividiendo entre 1000. Esta decision evita mezclar unidades en la tabla `readings`.
 
