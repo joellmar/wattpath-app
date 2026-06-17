@@ -4,7 +4,7 @@ Wattimizer es una aplicacion web B2B para monitorizar consumo electrico en pymes
 
 ## Cambios recientes analizados
 
-La rama de documentacion `cursor/documentaci-n-t-cnica-del-proyecto-8f34` parte del mismo commit que `main` (`3021eba`). Por tanto, no hay cambios funcionales propios de esta rama antes de generar estos documentos. El analisis se ha centrado en el estado actual de `main` y en los commits recientes de despliegue, CI/CD y configuracion que afectan directamente a la memoria tecnica.
+Como contexto de revision, la rama de documentacion `cursor/documentaci-n-t-cnica-del-proyecto-8f34` parte del mismo commit que `main` (`3021eba`). Por tanto, no hay cambios funcionales propios de esta rama antes de generar estos documentos. El analisis se ha centrado en el estado actual de `main` y en los commits recientes de despliegue, CI/CD y configuracion que afectan directamente a la memoria tecnica.
 
 Los ultimos cambios relevantes del repositorio refuerzan la parte de produccion: guia de Hetzner actualizada con incidencias reales, ajuste de variables OAuth de GitHub (`GH_OAUTH_*`), permisos de `mvnw` en CI, resolver DNS interno de Nginx, scripts SQL tarifarios reejecutables y apertura controlada de `/api/v1/auth/register/admin` para que pueda evaluarse la clave de administrador.
 

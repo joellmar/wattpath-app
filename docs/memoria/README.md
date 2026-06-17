@@ -2,7 +2,7 @@
 
 Esta carpeta contiene la documentacion tecnica en espanol de **Wattimizer**, preparada para usarse como base y anexos de la memoria final del proyecto DAW.
 
-Los documentos se han revisado sobre la rama `cursor/documentaci-n-t-cnica-del-proyecto-8f34`, que parte del commit `3021eba` de `main`. Ese punto del proyecto incluye los ultimos ajustes de despliegue real en Hetzner, CI/CD, OAuth2, Nginx, Mosquitto y scripts SQL de tarifas.
+Como contexto de revision, estos documentos se han contrastado en la rama `cursor/documentaci-n-t-cnica-del-proyecto-8f34`, que parte del commit `3021eba` de `main`. Ese punto del proyecto incluye los ultimos ajustes de despliegue real en Hetzner, CI/CD, OAuth2, Nginx, Mosquitto y scripts SQL de tarifas.
 
 ## Documentos
 

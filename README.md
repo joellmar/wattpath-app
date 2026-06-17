@@ -23,6 +23,7 @@ Wattimizer resuelve el problema de la opacidad energética en las pymes. A trav�
 
 La memoria final y sus anexos técnicos están en [`docs/memoria`](docs/memoria/):
 
+* [`README.md`](docs/memoria/README.md): índice de la documentación de memoria.
 * [`memoria-final-daw.md`](docs/memoria/memoria-final-daw.md): estructura académica completa del proyecto DAW.
 * [`anexo-a-backend-rest.md`](docs/memoria/anexo-a-backend-rest.md): controladores REST, endpoints, DTOs, seguridad y errores.
 * [`anexo-b-frontend-angular.md`](docs/memoria/anexo-b-frontend-angular.md): componentes Angular, servicios, RxJS y NgRx Signals.
