@@ -1,7 +1,9 @@
 package com.joselumartos.jwtauthbackenddemo.services;
 
+import com.joselumartos.jwtauthbackenddemo.dtos.CreateSimulatedDeviceRequest;
 import com.joselumartos.jwtauthbackenddemo.dtos.DeviceDto;
 import com.joselumartos.jwtauthbackenddemo.entities.Device;
+import com.joselumartos.jwtauthbackenddemo.entities.SimulationProfile;
 import com.joselumartos.jwtauthbackenddemo.entities.UserEntity;
 import com.joselumartos.jwtauthbackenddemo.mappers.DeviceDtoMapper;
 import com.joselumartos.jwtauthbackenddemo.repositories.DeviceRepository;
@@ -12,11 +14,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class DeviceService {
+    private static final String SIMULATED_MAC_PREFIX = "SIM";
+
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
     private final DeviceDtoMapper deviceDtoMapper;
@@ -53,6 +58,33 @@ public class DeviceService {
         device.setName(dto.name());
         device.setIsOn(dto.isOn());
 
+        if (Boolean.TRUE.equals(device.getSimulated()) && dto.simulationProfile() != null) {
+            device.setSimulationProfile(dto.simulationProfile());
+        }
+
+        return deviceDtoMapper.toDto(deviceRepository.save(device));
+    }
+
+    @Transactional
+    public DeviceDto createSimulatedDevice(CreateSimulatedDeviceRequest request, String currentUsername) {
+        if (request.simulationProfile() == null) {
+            throw new IllegalArgumentException("Debes seleccionar un perfil de simulación.");
+        }
+        if (request.name() == null || request.name().trim().length() < 3) {
+            throw new IllegalArgumentException("El nombre del dispositivo es obligatorio (mínimo 3 caracteres).");
+        }
+
+        UserEntity currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no localizado en sesión: " + currentUsername));
+
+        Device device = new Device();
+        device.setName(request.name().trim());
+        device.setMacAddress(generateUniqueSimulatedMacAddress());
+        device.setUser(currentUser);
+        device.setIsOn(true);
+        device.setSimulated(true);
+        device.setSimulationProfile(request.simulationProfile());
+
         return deviceDtoMapper.toDto(deviceRepository.save(device));
     }
 
@@ -84,6 +116,7 @@ public class DeviceService {
             device.setName(newName);
             device.setUser(currentUser);
             device.setIsOn(true);
+            device.setSimulated(false);
         } else {
             if (device.getUser() != null && !device.getUser().getUsername().equals("SYSTEM") && !device.getUser().getUsername().equals(currentUsername)) {
                 throw new IllegalStateException("Este dispositivo ya se encuentra vinculado a otra cuenta empresarial.");
@@ -110,5 +143,38 @@ public class DeviceService {
     @Transactional
     public void delete(Device device) {
         deviceRepository.delete(device);
+    }
+
+    private String generateUniqueSimulatedMacAddress() {
+        int nextSequence = deviceRepository.findByMacAddressStartingWith(SIMULATED_MAC_PREFIX).stream()
+                .map(Device::getMacAddress)
+                .map(this::extractSimulatedSequence)
+                .max(Comparator.naturalOrder())
+                .orElse(0) + 1;
+
+        for (int attempt = 0; attempt < 100; attempt++) {
+            String candidate = formatSimulatedMac(nextSequence + attempt);
+            if (deviceRepository.findByMacAddress(candidate).isEmpty()) {
+                return candidate;
+            }
+        }
+
+        throw new IllegalStateException("No se pudo generar una dirección MAC simulada única.");
+    }
+
+    private int extractSimulatedSequence(String macAddress) {
+        if (macAddress == null || !macAddress.startsWith(SIMULATED_MAC_PREFIX)) {
+            return 0;
+        }
+        String suffix = macAddress.substring(SIMULATED_MAC_PREFIX.length());
+        try {
+            return Integer.parseInt(suffix);
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
+    }
+
+    private String formatSimulatedMac(int sequence) {
+        return SIMULATED_MAC_PREFIX + String.format("%09d", sequence);
     }
 }

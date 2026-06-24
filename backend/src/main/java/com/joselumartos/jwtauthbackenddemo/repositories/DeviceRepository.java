@@ -15,4 +15,6 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     List<Device> findByUserUsername(String username);
 
     List<Device> findBySimulatedTrue();
+
+    List<Device> findByMacAddressStartingWith(String prefix);
 }

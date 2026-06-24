@@ -1,27 +1,29 @@
 -- ============================================================
--- Script 05: Seed del dispositivo de simulación (sin hardware físico)
+-- Script 05: Seed de dispositivos simulados (sin hardware físico)
 --
 -- CUÁNDO ejecutar:
---   Después de 03-seed-users-dev.sql.
---   Opcional: solo si quieres trabajar sin el Shelly físico conectado.
+--   Después de 03-seed-users-dev.sql y tras arrancar el backend
+--   con la entidad Device actualizada (columna simulation_profile).
 --
 -- QUÉ HACE:
---   Inserta un dispositivo virtual con is_simulated=true.
---   El backend tiene un job de simulación (saveSimulatedReading) que
---   puede generar lecturas artificiales para este dispositivo, lo que
---   permite probar el dashboard, las gráficas y los cálculos de coste
---   sin necesidad de tener el enchufe Shelly encendido y publicando.
---
--- DISPOSITIVO:
---   MAC sintética:  SIM000000001  (no es una MAC de hardware real)
---   Nombre:         Simulador IoT
---   is_simulated:   true
+--   Inserta un dispositivo virtual por perfil de simulación.
+--   El job IotTelemetrySimulationJob genera lecturas artificiales
+--   para probar dashboard, gráficas, costes y alertas sin Shelly.
 --
 -- IDEMPOTENCIA:
 --   ON CONFLICT (mac_address) DO NOTHING
+--   Backfill de simulation_profile en simuladores existentes.
 -- ============================================================
 
 BEGIN;
+
+ALTER TABLE devices
+    ADD COLUMN IF NOT EXISTS simulation_profile varchar(32);
+
+UPDATE devices
+SET simulation_profile = 'SINE_WAVE'
+WHERE is_simulated = true
+  AND (simulation_profile IS NULL OR simulation_profile = '');
 
 INSERT INTO devices (
     user_id,
@@ -29,6 +31,7 @@ INSERT INTO devices (
     mac_address,
     is_on,
     is_simulated,
+    simulation_profile,
     created_at,
     updated_at,
     created_by,
@@ -36,19 +39,41 @@ INSERT INTO devices (
 )
 SELECT
     u.id,
-    'Simulador IoT',
-    'SIM000000001',
-    true,            -- is_on=true: el simulador siempre está "encendido"
-    true,            -- is_simulated=true: es un dispositivo virtual
+    seed.name,
+    seed.mac_address,
+    true,
+    true,
+    seed.simulation_profile,
     NOW(),
     NOW(),
     'seed',
     'seed'
 FROM users u
+CROSS JOIN (
+    VALUES
+        ('Simulador onda senoidal', 'SIM000000001', 'SINE_WAVE'),
+        ('Simulador horno',         'SIM000000002', 'OVEN'),
+        ('Simulador lavadora',      'SIM000000003', 'WASHING_MACHINE'),
+        ('Simulador televisor',     'SIM000000004', 'TELEVISION'),
+        ('Simulador ventilador',    'SIM000000005', 'FAN'),
+        ('Simulador PC',            'SIM000000006', 'DESKTOP_PC'),
+        ('Simulador nevera',        'SIM000000007', 'FRIDGE'),
+        ('Simulador consumo fantasma', 'SIM000000008', 'STANDBY'),
+        ('Simulador carga alta',    'SIM000000009', 'CONSTANT_HIGH_LOAD')
+) AS seed(name, mac_address, simulation_profile)
 WHERE u.username = 'admin@wattimizer.dev'
-ON CONFLICT (mac_address) DO NOTHING;
+ON CONFLICT (mac_address) DO UPDATE
+SET
+    name = EXCLUDED.name,
+    is_simulated = true,
+    simulation_profile = EXCLUDED.simulation_profile,
+    updated_at = NOW(),
+    updated_by = 'seed';
 
 COMMIT;
 
 -- Verificación:
--- SELECT id, name, mac_address, is_on, is_simulated, user_id FROM devices WHERE mac_address = 'SIM000000001';
+-- SELECT name, mac_address, is_on, is_simulated, simulation_profile, user_id
+-- FROM devices
+-- WHERE mac_address LIKE 'SIM%'
+-- ORDER BY mac_address;

@@ -2,7 +2,7 @@
 
   <div class="border-b border-surface-800 pb-4 w-full text-left">
     <h2 class="text-3xl font-black text-surface-50 text-left">Gestión de <span class="text-primary">dispositivos IoT</span></h2>
-    <p class="text-muted-color text-sm mt-1 text-left">Vincula, monitoriza o elimina los sensores inteligentes de la red de tu empresa.</p>
+    <p class="text-muted-color text-sm mt-1 text-left">Vincula equipos físicos o crea simuladores para probar consumo, costes y alertas.</p>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start w-full text-left">
@@ -26,6 +26,17 @@
 
       <form [formGroup]="deviceForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 w-full justify-start text-left">
         <div class="flex flex-col gap-1 w-full text-left">
+          <label class="text-sm font-semibold text-surface-300 text-left">Tipo de dispositivo</label>
+          <p-selectbutton
+            formControlName="deviceKind"
+            [options]="deviceKindOptions"
+            optionLabel="label"
+            optionValue="value"
+            fluid
+          />
+        </div>
+
+        <div class="flex flex-col gap-1 w-full text-left">
           <label class="text-sm font-semibold text-surface-300 text-left">Nombre del equipo</label>
           <input type="text" pInputText formControlName="name" class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary text-left w-full" placeholder="ej. compresor nave norte" />
           @if (deviceForm.controls.name.touched && deviceForm.controls.name.invalid) {
@@ -33,13 +44,32 @@
           }
         </div>
 
-        <div class="flex flex-col gap-1 w-full text-left">
-          <label class="text-sm font-semibold text-surface-300 text-left">Dirección MAC física</label>
-          <input type="text" pInputText formControlName="macAddress" class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary text-left w-full uppercase font-mono" placeholder="9070694d3590" />
-          @if (deviceForm.controls.macAddress.touched && deviceForm.controls.macAddress.invalid) {
-            <small class="text-red-400 text-xs text-left">Introduce un formato válido de 12 caracteres hexadecimales sin separadores.</small>
-          }
-        </div>
+        @if (!isSimulatedForm()) {
+          <div class="flex flex-col gap-1 w-full text-left">
+            <label class="text-sm font-semibold text-surface-300 text-left">Dirección MAC física</label>
+            <input type="text" pInputText formControlName="macAddress" class="bg-surface-800 border-surface-700 text-surface-50 focus:border-primary text-left w-full uppercase font-mono" placeholder="9070694d3590" />
+            @if (deviceForm.controls.macAddress.touched && deviceForm.controls.macAddress.invalid) {
+              <small class="text-red-400 text-xs text-left">Introduce un formato válido de 12 caracteres hexadecimales sin separadores.</small>
+            }
+          </div>
+        }
+
+        @if (isSimulatedForm()) {
+          <div class="flex flex-col gap-1 w-full text-left">
+            <label class="text-sm font-semibold text-surface-300 text-left">Perfil de consumo</label>
+            <p-select
+              formControlName="simulationProfile"
+              [options]="simulationProfileOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecciona un perfil"
+              fluid
+            />
+            @if (deviceForm.controls.simulationProfile.touched && deviceForm.controls.simulationProfile.invalid) {
+              <small class="text-red-400 text-xs text-left">Selecciona un perfil de consumo.</small>
+            }
+          </div>
+        }
 
         <p-button type="submit" label="guardar dispositivo" icon="pi pi-save" [loading]="isLoadingSubmit()" class="uppercase bg-primary border-none text-primary-inverse font-bold py-2 rounded-xl transition-colors mt-2 text-left justify-start" fluid></p-button>
       </form>
@@ -63,7 +93,14 @@
 
           <ng-template pTemplate="body" let-device>
             <tr class="border-b border-surface-800/60 hover:bg-surface-800/40 transition-colors">
-              <td class="py-4 px-4 text-sm font-medium text-surface-100">{{ device.name || 'sin nombre asignado' }}</td>
+              <td class="py-4 px-4 text-sm font-medium text-surface-100">
+                <div class="flex flex-col gap-1">
+                  <span>{{ device.name || 'sin nombre asignado' }}</span>
+                  @if (device.simulated && device.simulationProfile) {
+                    <span class="text-xs text-surface-400">{{ simulationProfileLabel(device.simulationProfile) }}</span>
+                  }
+                </div>
+              </td>
               <td class="py-4 px-4 text-sm text-surface-400 uppercase font-mono">{{ device.macAddress }}</td>
               <td class="py-4 px-4">
                 <div class="flex items-center gap-2">
@@ -89,7 +126,7 @@
                     [rounded]="true"
                     [text]="true"
                     (onClick)="openEdit(device)"
-                    aria-label="editar nombre"
+                    aria-label="editar dispositivo"
                   />
                   <p-button
                     [icon]="device.isOn ? 'pi pi-power-off' : 'pi pi-bolt'"
@@ -124,7 +161,6 @@
   </div>
 </div>
 
-<!-- Diálogo: detalles del dispositivo -->
 <p-dialog
   header="Detalles del dispositivo"
   [modal]="true"
@@ -150,11 +186,16 @@
         <span class="font-semibold text-surface-300">Tipo</span>
         <span class="text-surface-100">{{ device.simulated ? 'Simulado' : 'Físico' }}</span>
       </p>
+      @if (device.simulated) {
+        <p class="flex justify-between">
+          <span class="font-semibold text-surface-300">Perfil</span>
+          <span class="text-surface-100">{{ simulationProfileLabel(device.simulationProfile) }}</span>
+        </p>
+      }
     </div>
   }
 </p-dialog>
 
-<!-- Diálogo: edición de nombre del dispositivo -->
 <p-dialog
   header="Editar dispositivo"
   [modal]="true"
@@ -163,7 +204,7 @@
   [style]="{ width: '28rem' }"
 >
   <p-fluid>
-    <form [formGroup]="editDeviceForm" (ngSubmit)="saveDeviceName()" class="flex flex-col gap-4 pt-2">
+    <form [formGroup]="editDeviceForm" (ngSubmit)="saveDeviceEdit()" class="flex flex-col gap-4 pt-2">
       <div class="flex flex-col gap-1">
         <label for="editDeviceName" class="text-sm font-semibold text-surface-300">Nombre del dispositivo</label>
         <input
@@ -176,6 +217,20 @@
           <small class="text-red-400 text-xs">El nombre es obligatorio (mínimo 3 caracteres).</small>
         }
       </div>
+
+      @if (selectedDevice()?.simulated) {
+        <div class="flex flex-col gap-1">
+          <label for="editSimulationProfile" class="text-sm font-semibold text-surface-300">Perfil de consumo</label>
+          <p-select
+            inputId="editSimulationProfile"
+            formControlName="simulationProfile"
+            [options]="simulationProfileOptions"
+            optionLabel="label"
+            optionValue="value"
+            fluid
+          />
+        </div>
+      }
 
       <p-button
         type="submit"

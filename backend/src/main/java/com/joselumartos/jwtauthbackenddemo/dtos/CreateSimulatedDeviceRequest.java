@@ -2,12 +2,7 @@ package com.joselumartos.jwtauthbackenddemo.dtos;
 
 import com.joselumartos.jwtauthbackenddemo.entities.SimulationProfile;
 
-public record DeviceDto(
-        Long id,
-        String username,
+public record CreateSimulatedDeviceRequest(
         String name,
-        String macAddress,
-        Boolean isOn,
-        Boolean simulated,
         SimulationProfile simulationProfile
 ) {}

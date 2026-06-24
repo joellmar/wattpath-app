@@ -59,6 +59,8 @@ services:
       OAUTH2_FRONTEND_CALLBACK_URI: ${OAUTH2_FRONTEND_CALLBACK_URI:-https://wattimizer.com/auth/oauth/callback}
       # CORS: orígenes aceptados separados por coma
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-https://wattimizer.com,https://www.wattimizer.com}
+      # Simulación desactivada en producción: evita telemetría artificial en el VPS
+      SIMULATION_ENABLED: "false"
     depends_on:
       - timescaledb
       - mosquitto

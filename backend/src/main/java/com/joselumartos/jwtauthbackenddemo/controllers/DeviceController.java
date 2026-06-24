@@ -1,5 +1,6 @@
 package com.joselumartos.jwtauthbackenddemo.controllers;
 
+import com.joselumartos.jwtauthbackenddemo.dtos.CreateSimulatedDeviceRequest;
 import com.joselumartos.jwtauthbackenddemo.dtos.DeviceDto;
 import com.joselumartos.jwtauthbackenddemo.services.DeviceService;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,15 @@ public class DeviceController {
     public ResponseEntity<DeviceDto> claimDevice(@RequestBody DeviceDto deviceDto, Principal principal) {
         DeviceDto claimed = deviceService.claimOrRegisterDevice(deviceDto.macAddress(), deviceDto.name(), principal.getName());
         return ResponseEntity.ok(claimed);
+    }
+
+    @PostMapping("/simulated")
+    public ResponseEntity<DeviceDto> createSimulatedDevice(
+            @RequestBody CreateSimulatedDeviceRequest request,
+            Principal principal
+    ) {
+        DeviceDto created = deviceService.createSimulatedDevice(request, principal.getName());
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

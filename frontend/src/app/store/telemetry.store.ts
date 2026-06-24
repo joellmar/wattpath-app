@@ -9,7 +9,11 @@ import {
 } from "@ngrx/signals";
 import { rxMethod } from "@ngrx/signals/rxjs-interop";
 import { distinctUntilChanged, filter, of, pipe, switchMap, tap } from "rxjs";
-import type { Device } from "../interfaces/device.interface";
+import type {
+	ClaimDeviceRequest,
+	CreateSimulatedDeviceRequest,
+	Device,
+} from "../interfaces/device.interface";
 import type { TelemetryState } from "../interfaces/telemetry-state.interface";
 import { WebsocketService } from "../services/websocket.service";
 
@@ -79,7 +83,7 @@ export const TelemetryStore = signalStore(
 			),
 
 			// POST /api/v1/devices/claim -> HU-11: Reclama un dispositivo huérfano asociado a SYSTEM
-			claimDevice: rxMethod<{ name: string; macAddress: string }>(
+			claimDevice: rxMethod<ClaimDeviceRequest>(
 				pipe(
 					switchMap((payload) => {
 						return http.post<Device>("/api/v1/devices/claim", payload).pipe(
@@ -98,6 +102,28 @@ export const TelemetryStore = signalStore(
 										"error de vinculación en el endpoint claim del backend:",
 										err,
 									);
+								},
+							}),
+						);
+					}),
+				),
+			),
+
+			createSimulatedDevice: rxMethod<CreateSimulatedDeviceRequest>(
+				pipe(
+					switchMap((payload) => {
+						return http.post<Device>("/api/v1/devices/simulated", payload).pipe(
+							tap({
+								next: (createdDevice) => {
+									const updatedList = [...store.devices(), createdDevice];
+									patchState(store, {
+										devices: updatedList,
+										selectedMac:
+											store.selectedMac() ?? createdDevice.macAddress,
+									});
+								},
+								error: (err) => {
+									console.error("error al crear el dispositivo simulado:", err);
 								},
 							}),
 						);
@@ -130,13 +156,8 @@ export const TelemetryStore = signalStore(
 				),
 			),
 
-			// PUT /api/v1/devices/{id} -> Actualización administrativa (Nombre/Estado virtual)
-			updateDevice: rxMethod<{
-				id: number;
-				name: string;
-				macAddress: string;
-				isOn: boolean;
-			}>(
+			// PUT /api/v1/devices/{id} -> Actualización administrativa (nombre, estado y perfil simulado)
+			updateDevice: rxMethod<Device>(
 				pipe(
 					switchMap((updatedDevice) => {
 						return http

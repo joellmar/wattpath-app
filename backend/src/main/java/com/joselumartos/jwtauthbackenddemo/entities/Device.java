@@ -30,4 +30,8 @@ public class Device extends BaseEntity {
     // columnDefinition con DEFAULT evita que Hibernate falle al añadir la columna NOT NULL sobre filas existentes
     @Column(name = "is_simulated", nullable = false, columnDefinition = "boolean default false")
     private Boolean simulated = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "simulation_profile")
+    private SimulationProfile simulationProfile;
 }
