@@ -14,13 +14,18 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class DeviceService {
     private static final String SIMULATED_MAC_PREFIX = "SIM";
+
+    private static final Map<SimulationProfile, String> DEMO_SIMULATOR_NAMES = demoSimulatorNames();
 
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
@@ -86,6 +91,25 @@ public class DeviceService {
         device.setSimulationProfile(request.simulationProfile());
 
         return deviceDtoMapper.toDto(deviceRepository.save(device));
+    }
+
+    @Transactional
+    public List<DeviceDto> createDemoSimulatorPack(String currentUsername) {
+        List<DeviceDto> createdDevices = new ArrayList<>();
+
+        for (SimulationProfile profile : SimulationProfile.values()) {
+            if (userAlreadyHasSimulatedProfile(currentUsername, profile)) {
+                continue;
+            }
+
+            CreateSimulatedDeviceRequest request = new CreateSimulatedDeviceRequest(
+                    DEMO_SIMULATOR_NAMES.get(profile),
+                    profile
+            );
+            createdDevices.add(createSimulatedDevice(request, currentUsername));
+        }
+
+        return createdDevices;
     }
 
     @Transactional(readOnly = true)
@@ -176,5 +200,25 @@ public class DeviceService {
 
     private String formatSimulatedMac(int sequence) {
         return SIMULATED_MAC_PREFIX + String.format("%09d", sequence);
+    }
+
+    private boolean userAlreadyHasSimulatedProfile(String username, SimulationProfile profile) {
+        return deviceRepository.findByUserUsername(username).stream()
+                .anyMatch(device -> Boolean.TRUE.equals(device.getSimulated())
+                        && profile.equals(device.getSimulationProfile()));
+    }
+
+    private static Map<SimulationProfile, String> demoSimulatorNames() {
+        Map<SimulationProfile, String> names = new EnumMap<>(SimulationProfile.class);
+        names.put(SimulationProfile.SINE_WAVE, "Simulador onda de prueba");
+        names.put(SimulationProfile.OVEN, "Simulador horno");
+        names.put(SimulationProfile.WASHING_MACHINE, "Simulador lavadora");
+        names.put(SimulationProfile.TELEVISION, "Simulador televisor");
+        names.put(SimulationProfile.FAN, "Simulador ventilador");
+        names.put(SimulationProfile.DESKTOP_PC, "Simulador PC");
+        names.put(SimulationProfile.FRIDGE, "Simulador nevera");
+        names.put(SimulationProfile.STANDBY, "Simulador consumo fantasma");
+        names.put(SimulationProfile.CONSTANT_HIGH_LOAD, "Simulador carga alta");
+        return Map.copyOf(names);
     }
 }

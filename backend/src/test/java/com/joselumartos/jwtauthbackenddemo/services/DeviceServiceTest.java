@@ -1,18 +1,13 @@
 package com.joselumartos.jwtauthbackenddemo.services;
 
-import com.joselumartos.jwtauthbackenddemo.config.SimulationProperties;
 import com.joselumartos.jwtauthbackenddemo.dtos.CreateSimulatedDeviceRequest;
 import com.joselumartos.jwtauthbackenddemo.dtos.DeviceDto;
 import com.joselumartos.jwtauthbackenddemo.entities.Device;
-import com.joselumartos.jwtauthbackenddemo.entities.Reading;
 import com.joselumartos.jwtauthbackenddemo.entities.SimulationProfile;
 import com.joselumartos.jwtauthbackenddemo.entities.UserEntity;
 import com.joselumartos.jwtauthbackenddemo.mappers.DeviceDtoMapper;
-import com.joselumartos.jwtauthbackenddemo.mappers.ReadingResponseMapper;
 import com.joselumartos.jwtauthbackenddemo.repositories.DeviceRepository;
-import com.joselumartos.jwtauthbackenddemo.repositories.ReadingRepository;
 import com.joselumartos.jwtauthbackenddemo.repositories.UserRepository;
-import com.joselumartos.jwtauthbackenddemo.simulation.SimulationProfileRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,16 +16,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -149,5 +140,36 @@ class DeviceServiceTest {
 
         assertThatThrownBy(() -> deviceService.updateDevice(10L, updatePayload, "otro@usuario.dev"))
                 .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void createDemoSimulatorPackSkipsProfilesAlreadyOwnedByUser() {
+        when(userRepository.findByUsername("admin@wattimizer.dev")).thenReturn(Optional.of(user));
+        when(deviceRepository.findByUserUsername("admin@wattimizer.dev"))
+                .thenReturn(List.of(simulatedDevice));
+        when(deviceRepository.findByMacAddressStartingWith("SIM")).thenReturn(List.of(simulatedDevice));
+        when(deviceRepository.findByMacAddress(any())).thenReturn(Optional.empty());
+        when(deviceRepository.save(any(Device.class))).thenAnswer(invocation -> {
+            Device saved = invocation.getArgument(0);
+            saved.setId(20L + saved.getSimulationProfile().ordinal());
+            return saved;
+        });
+        when(deviceDtoMapper.toDto(any(Device.class))).thenAnswer(invocation -> {
+            Device saved = invocation.getArgument(0);
+            return new DeviceDto(
+                    saved.getId(),
+                    user.getUsername(),
+                    saved.getName(),
+                    saved.getMacAddress(),
+                    saved.getIsOn(),
+                    saved.getSimulated(),
+                    saved.getSimulationProfile()
+            );
+        });
+
+        List<DeviceDto> created = deviceService.createDemoSimulatorPack("admin@wattimizer.dev");
+
+        assertThat(created).hasSize(SimulationProfile.values().length - 1);
+        assertThat(created).noneMatch(device -> device.simulationProfile() == SimulationProfile.OVEN);
     }
 }

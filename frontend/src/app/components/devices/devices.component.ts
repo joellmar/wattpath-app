@@ -57,6 +57,7 @@ export default class DevicesComponent {
 	private readonly http = inject(HttpClient);
 
 	readonly isLoadingSubmit = signal<boolean>(false);
+	readonly isLoadingDemoPack = signal<boolean>(false);
 	readonly errorMessage = signal<string | null>(null);
 	readonly successMessage = signal<string | null>(null);
 
@@ -187,6 +188,36 @@ export default class DevicesComponent {
 					this.isLoadingSubmit.set(false);
 					this.errorMessage.set(
 						err.error?.message || "Error al añadir o vincular el dispositivo.",
+					);
+				},
+			});
+	}
+
+	addDemoPack(): void {
+		this.isLoadingDemoPack.set(true);
+		this.errorMessage.set(null);
+		this.successMessage.set(null);
+
+		this.http
+			.post<Device[]>("/api/v1/devices/simulated/demo-pack", {})
+			.subscribe({
+				next: (createdDevices) => {
+					this.isLoadingDemoPack.set(false);
+					if (createdDevices.length === 0) {
+						this.successMessage.set(
+							"Ya tienes todos los perfiles de demostración en tu cuenta.",
+						);
+					} else {
+						this.successMessage.set(
+							`Se han añadido ${createdDevices.length} simuladores. Ya puedes probarlos en el panel.`,
+						);
+					}
+					this.store.loadDevices();
+				},
+				error: (err) => {
+					this.isLoadingDemoPack.set(false);
+					this.errorMessage.set(
+						err.error?.message || "No se pudo crear el pack de demostración.",
 					);
 				},
 			});

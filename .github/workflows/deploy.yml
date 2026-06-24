@@ -71,6 +71,7 @@ jobs:
 
             # Regenerar .env con todos los secretos de producción.
             # Cada echo es una línea; las comillas simples evitan expansión del shell.
+            SIMULATION_ENABLED="${{ secrets.SIMULATION_ENABLED }}"
             {
               echo "DB_NAME=${{ secrets.DB_NAME }}"
               echo "DB_USER=${{ secrets.DB_USER }}"
@@ -85,6 +86,7 @@ jobs:
               echo "GH_OAUTH_CLIENT_SECRET=${{ secrets.GH_OAUTH_CLIENT_SECRET }}"
               echo "OAUTH2_FRONTEND_CALLBACK_URI=${{ secrets.OAUTH2_FRONTEND_CALLBACK_URI }}"
               echo "APP_CORS_ALLOWED_ORIGINS=${{ secrets.APP_CORS_ALLOWED_ORIGINS }}"
+              echo "SIMULATION_ENABLED=${SIMULATION_ENABLED:-true}"
             } > .env
             chmod 600 .env
 

@@ -254,6 +254,8 @@ de cada variable. Presta atención a:
   > Por eso las variables se llaman `GH_OAUTH_*` y no `GITHUB_*`.
 - `APP_CORS_ALLOWED_ORIGINS` se escribe todo en una línea, separado por coma y sin espacios:
   `https://wattimizer.com,https://www.wattimizer.com`
+- `SIMULATION_ENABLED=true` activa el modo demostración con simuladores IoT (ver sección 15).
+  Ponlo a `false` si solo quieres telemetría Shelly real.
 
 ```bash
 chmod 600 .env  # Solo root puede leerlo
@@ -404,6 +406,7 @@ desplegará automáticamente en el VPS.
 | `GH_OAUTH_CLIENT_SECRET` | Client Secret de GitHub OAuth2 |
 | `OAUTH2_FRONTEND_CALLBACK_URI` | `https://wattimizer.com/auth/oauth/callback` |
 | `APP_CORS_ALLOWED_ORIGINS` | `https://wattimizer.com,https://www.wattimizer.com` |
+| `SIMULATION_ENABLED` | *(opcional)* `true` para modo demostración web; `false` para desactivar telemetría simulada |
 
 > **GitHub no permite** crear secrets con nombres que empiecen por `GITHUB_`
 > (prefijo reservado para variables internas de Actions). Por eso los secrets
@@ -429,6 +432,156 @@ git push origin main
 ```
 
 Verifica el resultado en GitHub → pestaña **Actions**.
+
+---
+
+## 15. Simuladores de consumo en producción (modo demostración)
+
+Esta sección explica cómo dejar activos los **simuladores IoT** en `https://wattimizer.com` para que cualquier visitante registrado pueda probar el dashboard, costes y alertas **sin un Shelly físico**.
+
+### 15.1. Por qué existe `SIMULATION_ENABLED`
+
+El backend incluye un job programado (`IotTelemetrySimulationJob`) que, cada 5 segundos, genera lecturas sintéticas para dispositivos con `is_simulated=true`. Esas lecturas entran en el mismo pipeline que la telemetría real: TimescaleDB, WebSocket, analíticas y alertas de maxímetro.
+
+La variable **`SIMULATION_ENABLED`** actúa como interruptor maestro de ese job:
+
+| Valor | Comportamiento |
+|---|---|
+| `true` | Los simuladores emiten lecturas. Modo demostración web activo. |
+| `false` | El job no corre. Solo entra telemetría real por MQTT (Shelly). |
+
+**Por qué la pusimos inicialmente a `false`:** en el primer despliegue productivo la prioridad era no mezclar datos artificiales con mediciones reales: evita consumo de CPU/BD innecesario, alertas de maxímetro provocadas por perfiles como `CONSTANT_HIGH_LOAD`, y confusión si alguien monitoriza consumo real. Era el valor conservador correcto para un entorno “solo hardware”.
+
+**Por qué ahora la activamos por defecto (`true`):** la web pública funciona como demostración del producto. Cualquier usuario registrado debe poder probar los perfiles sin hardware. Los simuladores son **multitenant** (cada usuario ve solo los suyos) y no sustituyen a un Shelly real salvo que el usuario los cree.
+
+> El perfil `CONSTANT_HIGH_LOAD` puede disparar alertas si la tarifa tiene potencia contratada baja. Es intencionado para probar el maxímetro en demo.
+
+### 15.2. Qué está automatizado (sin intervención manual)
+
+Tras cada `push` a `main`, el pipeline CI/CD ya hace lo siguiente:
+
+1. Compila frontend y backend.
+2. Regenera `.env` en el VPS incluyendo `SIMULATION_ENABLED=true` (salvo que definas el secret `SIMULATION_ENABLED=false` en GitHub).
+3. Ejecuta `docker compose up -d --build`, que inyecta la variable al contenedor `spring_backend`.
+4. Spring Boot lee `simulation.enabled=${SIMULATION_ENABLED:true}`.
+
+Archivos implicados:
+
+| Archivo | Rol |
+|---|---|
+| `docker-compose.yml` | `SIMULATION_ENABLED: ${SIMULATION_ENABLED:-true}` |
+| `.env.example` | Documenta la variable para el VPS |
+| `.github/workflows/deploy.yml` | Escribe `SIMULATION_ENABLED` en el `.env` del servidor |
+| `backend/.../application.properties` | Mapea la variable al job de simulación |
+
+**No hace falta ejecutar el seed SQL de desarrollo (`05-seed-device-simulation.sql`) en producción.** Ese script crea simuladores bajo `admin@wattimizer.dev`, un usuario que solo existe en local. En producción cada usuario crea los suyos desde la web.
+
+### 15.3. Pasos manuales (tu input)
+
+#### A) Primera activación en un VPS ya desplegado (una sola vez)
+
+Si el servidor ya estaba corriendo con `SIMULATION_ENABLED=false`, basta con desplegar la versión actual (push a `main`) o, si quieres forzarlo sin esperar al pipeline:
+
+```bash
+cd /root/wattimizer-app
+
+# Asegúrate de tener la última versión
+git fetch origin main
+git reset --hard origin/main
+
+# Añade la variable al .env si no existe
+grep -q '^SIMULATION_ENABLED=' .env || echo 'SIMULATION_ENABLED=true' >> .env
+sed -i 's/^SIMULATION_ENABLED=.*/SIMULATION_ENABLED=true/' .env
+
+# Recrea el backend para que coja la variable
+docker compose --env-file .env up -d --build backend
+```
+
+Comprueba que el job está activo:
+
+```bash
+docker compose exec backend printenv SIMULATION_ENABLED
+# Debe mostrar: true
+
+docker compose logs backend --since=2m | grep -i simul
+# Tras crear simuladores, verás trazas debug de telemetría simulada
+```
+
+#### B) Para cada visitante que quiera probar (flujo de usuario final)
+
+No requiere acceso SSH. El usuario solo necesita cuenta en la web:
+
+1. Entrar en `https://wattimizer.com` e **iniciar sesión** (registro, Google o GitHub).
+2. Ir a **Dispositivos** (`/devices`).
+3. Pulsar **“Añadir pack de demostración”** (botón verde bajo el formulario).
+   - Crea **9 simuladores**, uno por perfil: horno, lavadora, televisor, ventilador, PC, nevera, consumo fantasma, carga alta y onda de prueba.
+   - Es **idempotente**: si ya tienes un perfil, no lo duplica.
+4. Ir al **Panel** (`/dashboard`), elegir un simulador en el selector y observar la curva de consumo en unos segundos.
+5. *(Opcional)* Volver a Dispositivos, **apagar** un simulador y confirmar que la potencia baja a 0 W.
+6. *(Opcional)* Crear un simulador individual: tipo **Simulado** → elegir perfil → guardar.
+
+Alternativa avanzada por API (con token JWT de sesión):
+
+```bash
+curl -s -X POST https://wattimizer.com/api/v1/devices/simulated/demo-pack \
+  -H "Authorization: Bearer TU_JWT" \
+  -H "Content-Type: application/json"
+```
+
+#### C) Configurar tarifa (recomendado para ver costes)
+
+Los simuladores generan kWh, pero el panel de costes necesita una tarifa asignada. Si el visitante no la tiene:
+
+1. Ir a **Tarifas** y crear o asignar una tarifa de prueba.
+2. Volver al panel y comprobar coste acumulado y consumo fantasma.
+
+### 15.4. Desactivar simulación en producción
+
+Cuando la web deje de ser demo y solo quieras Shelly real:
+
+**Opción 1 — GitHub Secret (recomendada, persiste en cada deploy):**
+
+1. GitHub → Settings → Secrets → Actions → New secret.
+2. Nombre: `SIMULATION_ENABLED`, valor: `false`.
+3. Haz un push vacío o redeploy manual en el VPS.
+
+**Opción 2 — Solo en el VPS (hasta el próximo deploy):**
+
+```bash
+sed -i 's/^SIMULATION_ENABLED=.*/SIMULATION_ENABLED=false/' /root/wattimizer-app/.env
+cd /root/wattimizer-app
+docker compose --env-file .env up -d --build backend
+```
+
+Los dispositivos simulados **siguen en la base de datos**, pero dejan de emitir lecturas nuevas.
+
+### 15.5. Verificación rápida post-activación
+
+```bash
+# 1. Variable activa en el contenedor
+docker compose exec backend printenv SIMULATION_ENABLED
+
+# 2. Tras que un usuario pulse "Añadir pack de demostración", deben existir filas simuladas
+docker compose exec -T timescaledb psql -U postgres -d wattimizer_db -c \
+  "SELECT name, mac_address, simulation_profile, is_on FROM devices WHERE is_simulated = true ORDER BY name LIMIT 15;"
+
+# 3. Lecturas entrando (espera ~10 s tras crear simuladores)
+docker compose exec -T timescaledb psql -U postgres -d wattimizer_db -c \
+  "SELECT time, power_w FROM readings ORDER BY time DESC LIMIT 5;"
+```
+
+En el navegador: login → Dispositivos → pack de demostración → Panel → selector de dispositivo → gráfica moviéndose.
+
+### 15.6. Resumen: automatizado vs manual
+
+| Acción | ¿Automatizado? | Responsable |
+|---|---|---|
+| Compilar y desplegar código con soporte simuladores | Sí (CI/CD en push a `main`) | GitHub Actions |
+| `SIMULATION_ENABLED=true` por defecto en `.env` del VPS | Sí (deploy.yml) | GitHub Actions |
+| Reiniciar backend con la variable | Sí (docker compose en deploy) | GitHub Actions |
+| Crear los 9 simuladores por usuario | No (botón en la web) | Usuario visitante |
+| Asignar tarifa para ver costes | No | Usuario visitante |
+| Desactivar simulación (`false`) | Opcional secret `SIMULATION_ENABLED` | Administrador |
 
 ---
 

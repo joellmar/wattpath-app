@@ -45,6 +45,12 @@ public class DeviceController {
         return ResponseEntity.ok(claimed);
     }
 
+    @PostMapping("/simulated/demo-pack")
+    public ResponseEntity<List<DeviceDto>> createDemoSimulatorPack(Principal principal) {
+        List<DeviceDto> created = deviceService.createDemoSimulatorPack(principal.getName());
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    }
+
     @PostMapping("/simulated")
     public ResponseEntity<DeviceDto> createSimulatedDevice(
             @RequestBody CreateSimulatedDeviceRequest request,
