@@ -40,6 +40,21 @@ private final DeviceService deviceService;
         return ResponseEntity.ok(latest);
     }
 
+    @GetMapping("/device/{macAddress}/recent")
+    public ResponseEntity<List<ReadingResponse>> getRecentReadingsByDevice(
+            @PathVariable String macAddress,
+            @RequestParam(defaultValue = "120") int seconds,
+            Principal principal
+    ) {
+        DeviceDto device = deviceService.findByMacAddress(macAddress);
+        if (!device.username().equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<ReadingResponse> readings = readingService.listRecentByMacAddress(macAddress, seconds);
+        return ResponseEntity.ok(readings);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<ReadingResponse> getReadingByCompositeKey(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant time,

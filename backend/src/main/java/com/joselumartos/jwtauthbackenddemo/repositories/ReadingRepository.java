@@ -29,4 +29,9 @@ public interface ReadingRepository extends JpaRepository<Reading, Long> {
     @Transactional
     @Query("DELETE FROM Reading r WHERE r.time = :time AND r.device.macAddress = :macAddress")
     Long deleteByTimeAndDeviceMacAddress(@Param("time") Instant time, @Param("macAddress") String macAddress);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Reading r WHERE r.device.macAddress = :macAddress")
+    int deleteAllByDeviceMacAddress(@Param("macAddress") String macAddress);
 }

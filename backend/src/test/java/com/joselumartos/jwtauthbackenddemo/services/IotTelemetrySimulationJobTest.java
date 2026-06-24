@@ -2,12 +2,8 @@ package com.joselumartos.jwtauthbackenddemo.services;
 
 import com.joselumartos.jwtauthbackenddemo.config.SimulationProperties;
 import com.joselumartos.jwtauthbackenddemo.entities.Device;
-import com.joselumartos.jwtauthbackenddemo.entities.Reading;
 import com.joselumartos.jwtauthbackenddemo.entities.SimulationProfile;
-import com.joselumartos.jwtauthbackenddemo.mappers.ReadingResponseMapper;
 import com.joselumartos.jwtauthbackenddemo.repositories.DeviceRepository;
-import com.joselumartos.jwtauthbackenddemo.repositories.ReadingRepository;
-import com.joselumartos.jwtauthbackenddemo.simulation.SimulationProfileRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,11 +14,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,39 +30,32 @@ class IotTelemetrySimulationJobTest {
     private DeviceRepository deviceRepository;
 
     @Mock
-    private ReadingRepository readingRepository;
-
-    @Mock
-    private ReadingService readingService;
-
-    @Mock
-    private TelemetryBroadcaster telemetryBroadcaster;
-
-    @Mock
-    private AlertService alertService;
-
-    @Mock
-    private ReadingResponseMapper readingResponseMapper;
-
-    @Mock
-    private SimulationProfileRegistry profileRegistry;
-
-    @Mock
     private SimulationProperties simulationProperties;
+
+    @Mock
+    private SimulatedTelemetryProcessor telemetryProcessor;
 
     @InjectMocks
     private IotTelemetrySimulationJob simulationJob;
 
-    private Device device;
+    private Device deviceA;
+    private Device deviceB;
 
     @BeforeEach
     void setUp() {
-        device = new Device();
-        device.setId(3L);
-        device.setMacAddress("SIM000000001");
-        device.setIsOn(false);
-        device.setSimulated(true);
-        device.setSimulationProfile(SimulationProfile.SINE_WAVE);
+        deviceA = new Device();
+        deviceA.setId(1L);
+        deviceA.setMacAddress("SIM000000001");
+        deviceA.setIsOn(true);
+        deviceA.setSimulated(true);
+        deviceA.setSimulationProfile(SimulationProfile.SINE_WAVE);
+
+        deviceB = new Device();
+        deviceB.setId(2L);
+        deviceB.setMacAddress("SIM000000002");
+        deviceB.setIsOn(true);
+        deviceB.setSimulated(true);
+        deviceB.setSimulationProfile(SimulationProfile.TELEVISION);
     }
 
     @Test
@@ -88,35 +77,26 @@ class IotTelemetrySimulationJobTest {
     }
 
     @Test
-    void publishSimulatedTelemetryWritesZeroPowerWhenDeviceIsOff() {
+    void publishSimulatedTelemetryContinuesWhenOneDeviceFails() {
         when(simulationProperties.enabled()).thenReturn(true);
         when(simulationProperties.intervalMs()).thenReturn(5000L);
-        when(deviceRepository.findBySimulatedTrue()).thenReturn(List.of(device));
-        when(readingRepository.findFirstByDeviceMacAddressOrderByTimeDesc("SIM000000001"))
-                .thenReturn(Optional.of(readingWithKwh(new BigDecimal("4.0000"))));
-        when(readingService.saveSimulatedReading(
-                eq(device),
-                any(Instant.class),
-                eq(BigDecimal.ZERO),
-                eq(new BigDecimal("4.0000")),
-                eq(false)
-        )).thenReturn(new Reading());
+        when(deviceRepository.findBySimulatedTrue()).thenReturn(List.of(deviceA, deviceB));
+        doThrow(new RuntimeException("duplicate key"))
+                .when(telemetryProcessor)
+                .processDevice(eq(deviceA), any(Instant.class), eq(5000L));
 
         simulationJob.publishSimulatedTelemetry();
 
-        verify(profileRegistry, never()).calculatePowerW(any(), any(), any());
-        verify(readingService).saveSimulatedReading(
-                eq(device),
-                any(Instant.class),
-                eq(BigDecimal.ZERO),
-                eq(new BigDecimal("4.0000")),
-                eq(false)
-        );
+        verify(telemetryProcessor).processDevice(eq(deviceA), any(Instant.class), eq(5000L));
+        verify(telemetryProcessor).processDevice(eq(deviceB), any(Instant.class), eq(5000L));
     }
 
-    private Reading readingWithKwh(BigDecimal kwh) {
-        Reading reading = new Reading();
-        reading.setEnergyTotalKwh(kwh);
-        return reading;
+    @Test
+    void publishSimulatedTelemetryDoesNothingWhenDisabled() {
+        when(simulationProperties.enabled()).thenReturn(false);
+
+        simulationJob.publishSimulatedTelemetry();
+
+        verify(telemetryProcessor, never()).processDevice(any(), any(), any(Long.class));
     }
 }

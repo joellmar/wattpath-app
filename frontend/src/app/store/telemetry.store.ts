@@ -14,6 +14,7 @@ import type {
 	CreateSimulatedDeviceRequest,
 	Device,
 } from "../interfaces/device.interface";
+import type { ReadingResponse } from "../interfaces/reading-response.interface";
 import type { TelemetryState } from "../interfaces/telemetry-state.interface";
 import { WebsocketService } from "../services/websocket.service";
 
@@ -44,10 +45,54 @@ export const TelemetryStore = signalStore(
 			store,
 			http = inject(HttpClient),
 			wsService = inject(WebsocketService),
-		) => ({
+		) => {
+			const loadRecentReadings = (mac: string): void => {
+				http
+					.get<ReadingResponse[]>(
+						`/api/v1/readings/device/${encodeURIComponent(mac)}/recent`,
+						{ params: { seconds: 120 } },
+					)
+					.subscribe({
+						next: (readings) => {
+							if (!readings || readings.length === 0) {
+								return;
+							}
+
+							const limit = 20;
+							const slice =
+								readings.length > limit
+									? readings.slice(readings.length - limit)
+									: readings;
+
+							patchState(store, (state) => ({
+								historicalReadings: {
+									...state.historicalReadings,
+									[mac]: {
+										timestamps: slice.map((reading) =>
+											typeof reading.time === "string"
+												? reading.time
+												: String(reading.time),
+										),
+										powerW: slice.map((reading) => Number(reading.powerW)),
+									},
+								},
+							}));
+						},
+						error: () => {
+							// Sin historial previo: el WebSocket seguirá alimentando la gráfica.
+						},
+					});
+			};
+
+			return {
 			setSelectedMac(mac: string | null): void {
 				patchState(store, { selectedMac: mac });
+				if (mac) {
+					loadRecentReadings(mac);
+				}
 			},
+
+			loadRecentReadings,
 
 			// GET /api/v1/devices -> Recupera los medidores del usuario en sesión
 			loadDevices: rxMethod<void>(
@@ -240,7 +285,7 @@ export const TelemetryStore = signalStore(
 									};
 									const nextTimestamps = [
 										...currentHistory.timestamps,
-										reading.time,
+										String(reading.time),
 									];
 									const nextPowerW = [...currentHistory.powerW, reading.powerW];
 
@@ -268,6 +313,7 @@ export const TelemetryStore = signalStore(
 					}),
 				),
 			),
-		}),
+		};
+		},
 	),
 );

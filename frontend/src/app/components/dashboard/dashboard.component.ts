@@ -180,6 +180,7 @@ export default class DashboardComponent {
 		effect(() => {
 			const mac = this.store.selectedMac();
 			if (mac) {
+				this.store.loadRecentReadings(mac);
 				this.store.connectTelemetry(mac);
 				// Solo lanzamos analíticas si hay tarifa configurada y MAC seleccionada
 				if (this.hasMyTariff()) {
@@ -260,5 +261,9 @@ export default class DashboardComponent {
 
 	navigateToTariffConfig(): void {
 		this.router.navigate(["/tariffs"]);
+	}
+
+	onSelectedMacChange(mac: string | null): void {
+		this.store.setSelectedMac(mac);
 	}
 }

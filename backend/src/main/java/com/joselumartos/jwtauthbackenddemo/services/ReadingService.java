@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -101,6 +102,16 @@ public class ReadingService {
                 .findFirstByDeviceMacAddressOrderByTimeDesc(macAddress)
                 .map(readingResponseMapper::toDto)
                 .orElseThrow(() -> new EntityNotFoundException("Reading not found with MAC address: " + macAddress));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReadingResponse> listRecentByMacAddress(String macAddress, int seconds) {
+        Instant end = Instant.now();
+        Instant start = end.minus(Math.max(seconds, 1), ChronoUnit.SECONDS);
+        return readingRepository.findReadingsInInterval(macAddress, start, end)
+                .stream()
+                .map(readingResponseMapper::toDto)
+                .toList();
     }
 
     @Transactional

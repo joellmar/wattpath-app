@@ -237,9 +237,10 @@ export default class DevicesComponent {
 					this.successMessage.set("Dispositivo eliminado de la red.");
 					this.store.loadDevices();
 				},
-				error: () => {
+				error: (err: { status?: number; error?: { message?: string } }) => {
 					this.errorMessage.set(
-						"No se pudo eliminar el dispositivo de la red.",
+						err.error?.message ||
+							"No se pudo eliminar el dispositivo de la red.",
 					);
 				},
 			});

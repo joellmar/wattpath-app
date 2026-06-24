@@ -18,7 +18,7 @@
       <p-select
         [options]="devices()"
         [ngModel]="store.selectedMac()"
-        (onChange)="store.setSelectedMac($event.value)"
+        (ngModelChange)="onSelectedMacChange($event)"
         optionLabel="name"
         optionValue="macAddress"
         placeholder="Selecciona un medidor"

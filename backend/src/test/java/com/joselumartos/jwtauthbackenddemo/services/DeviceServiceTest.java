@@ -6,7 +6,9 @@ import com.joselumartos.jwtauthbackenddemo.entities.Device;
 import com.joselumartos.jwtauthbackenddemo.entities.SimulationProfile;
 import com.joselumartos.jwtauthbackenddemo.entities.UserEntity;
 import com.joselumartos.jwtauthbackenddemo.mappers.DeviceDtoMapper;
+import com.joselumartos.jwtauthbackenddemo.repositories.AlertRepository;
 import com.joselumartos.jwtauthbackenddemo.repositories.DeviceRepository;
+import com.joselumartos.jwtauthbackenddemo.repositories.ReadingRepository;
 import com.joselumartos.jwtauthbackenddemo.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +38,12 @@ class DeviceServiceTest {
 
     @Mock
     private DeviceDtoMapper deviceDtoMapper;
+
+    @Mock
+    private ReadingRepository readingRepository;
+
+    @Mock
+    private AlertRepository alertRepository;
 
     @InjectMocks
     private DeviceService deviceService;
@@ -171,5 +179,18 @@ class DeviceServiceTest {
 
         assertThat(created).hasSize(SimulationProfile.values().length - 1);
         assertThat(created).noneMatch(device -> device.simulationProfile() == SimulationProfile.OVEN);
+    }
+
+    @Test
+    void deleteByIdRemovesReadingsAndAlertsBeforeDevice() {
+        when(deviceRepository.findById(10L)).thenReturn(Optional.of(simulatedDevice));
+        when(readingRepository.deleteAllByDeviceMacAddress("SIM000000002")).thenReturn(5);
+        when(alertRepository.deleteByDeviceId(10L)).thenReturn(1);
+
+        deviceService.deleteById(10L);
+
+        verify(readingRepository).deleteAllByDeviceMacAddress("SIM000000002");
+        verify(alertRepository).deleteByDeviceId(10L);
+        verify(deviceRepository).delete(simulatedDevice);
     }
 }

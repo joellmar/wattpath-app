@@ -5,7 +5,7 @@ export interface TelemetryState {
 	selectedMac: string | null;
 	historicalReadings: {
 		[mac: string]: {
-			timestamps: number[];
+			timestamps: string[];
 			powerW: number[];
 		};
 	};

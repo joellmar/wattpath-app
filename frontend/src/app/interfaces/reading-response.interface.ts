@@ -1,5 +1,5 @@
 export interface ReadingResponse {
-	time: number;
+	time: string | number;
 	macAddress: string;
 	powerW: number;
 	energyTotalKwh: number;

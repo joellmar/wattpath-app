@@ -6,7 +6,9 @@ import com.joselumartos.jwtauthbackenddemo.entities.Device;
 import com.joselumartos.jwtauthbackenddemo.entities.SimulationProfile;
 import com.joselumartos.jwtauthbackenddemo.entities.UserEntity;
 import com.joselumartos.jwtauthbackenddemo.mappers.DeviceDtoMapper;
+import com.joselumartos.jwtauthbackenddemo.repositories.AlertRepository;
 import com.joselumartos.jwtauthbackenddemo.repositories.DeviceRepository;
+import com.joselumartos.jwtauthbackenddemo.repositories.ReadingRepository;
 import com.joselumartos.jwtauthbackenddemo.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,8 @@ public class DeviceService {
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
     private final DeviceDtoMapper deviceDtoMapper;
+    private final ReadingRepository readingRepository;
+    private final AlertRepository alertRepository;
 
     @Transactional(readOnly = true)
     public List<DeviceDto> listAll() {
@@ -158,10 +162,13 @@ public class DeviceService {
 
     @Transactional
     public void deleteById(Long id) {
-        if (!deviceRepository.existsById(id)) {
-            throw new EntityNotFoundException("Device not found with id: " + id);
-        }
-        deviceRepository.deleteById(id);
+        Device device = deviceRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Device not found with id: " + id));
+
+        String macAddress = device.getMacAddress();
+        readingRepository.deleteAllByDeviceMacAddress(macAddress);
+        alertRepository.deleteByDeviceId(id);
+        deviceRepository.delete(device);
     }
 
     @Transactional

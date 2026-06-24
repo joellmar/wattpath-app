@@ -100,6 +100,17 @@ public class GlobalExceptionHandler {
             return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
 
+        if (causeMessage != null && (causeMessage.contains("readings") || causeMessage.contains("alerts"))
+                && causeMessage.contains("foreign key")) {
+            ErrorResponse error = new ErrorResponse(
+                    HttpStatus.CONFLICT.value(),
+                    HttpStatus.CONFLICT.getReasonPhrase(),
+                    "No se puede eliminar el dispositivo porque aún tiene lecturas o alertas asociadas.",
+                    LocalDateTime.now()
+            );
+            return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+        }
+
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
