@@ -93,5 +93,9 @@ jobs:
             # Reconstruir solo los contenedores cuya imagen ha cambiado.
             docker compose --env-file .env up -d --build
 
+            # Nginx resuelve backend/frontend al arrancar; si esos contenedores se
+            # recrean con IP nueva, el proxy sigue apuntando a la IP antigua → 502.
+            docker compose restart nginx
+
             # Eliminar imágenes sin etiqueta que ya no usa ningún contenedor.
             docker image prune -f

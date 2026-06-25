@@ -365,6 +365,99 @@ docker compose logs nginx --tail=20
 
 ---
 
+## 12.1. Troubleshooting: error 502 Bad Gateway
+
+Un **502** significa que Cloudflare (o el navegador) llega al VPS, Nginx responde, pero **no puede hablar con el contenedor interno** (`frontend` o `backend`). `docker ps` puede mostrar todo en *Up* y aun así fallar: el contenedor está vivo, pero Nginx apunta a una IP antigua de la red Docker.
+
+### Diagnóstico rápido (5 minutos)
+
+Conéctate por SSH y ejecuta desde `/root/wattimizer-app`:
+
+```bash
+cd /root/wattimizer-app
+
+# 1. Estado real (fíjate en la columna STATUS: Restarting, unhealthy…)
+docker compose ps
+
+# 2. ¿Nginx ve el frontend y el backend?
+docker compose exec nginx wget -qO- http://frontend:80/ | head -c 200
+docker compose exec nginx wget -qS -O /dev/null http://backend:8080/api/v1/auth/login 2>&1 | head -5
+
+# 3. Errores de proxy (busca "connect() failed" o "upstream")
+docker compose logs nginx --tail=30
+
+# 4. ¿Spring Boot arrancó?
+docker compose logs backend --tail=50 | grep -E "Started JwtAuthBackendDemoApplication|ERROR|Exception"
+
+# 5. Prueba local sin Cloudflare
+curl -k -I https://127.0.0.1 -H "Host: wattimizer.com"
+curl -k -s -o /dev/null -w "%{http_code}\n" \
+  -X POST https://127.0.0.1/api/v1/auth/login \
+  -H "Host: wattimizer.com" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"x","password":"x"}'
+```
+
+### Interpretación de resultados
+
+| Síntoma | Causa probable | Acción |
+|---|---|---|
+| `wget` desde nginx a `frontend`/`backend` falla con *Connection refused* | IP cacheada en Nginx tras `docker compose up --build` | `docker compose restart nginx` |
+| `backend` en *Restarting* o logs con `Application run failed` | Spring no arranca (BD, `.env`, OOM…) | Revisar logs completos: `docker compose logs backend --tail=100` |
+| `Started JwtAuthBackendDemoApplication` OK pero API 502 | Casi seguro Nginx con IP antigua | `docker compose restart nginx` |
+| Nginx no arranca / error SSL en logs | Certificado Let's Encrypt caducado o ruta incorrecta | `certbot certificates` y `ls /etc/letsencrypt/live/wattimizer.com/` |
+| Puerto 80/443 ocupado por otro proceso | Conflicto fuera de Docker | `ss -tlnp \| grep -E ':80\|:443'` |
+
+### Fix más habitual tras un deploy automático
+
+```bash
+cd /root/wattimizer-app
+docker compose restart nginx
+curl -I https://wattimizer.com
+```
+
+Debe devolver **HTTP/2 200** (o 301/302), no 502.
+
+Si sigue fallando:
+
+```bash
+# Recrear stack completo (sin borrar volúmenes de BD)
+docker compose --env-file .env up -d --build
+docker compose restart nginx
+```
+
+### Si el backend no arranca
+
+```bash
+docker compose logs backend --tail=120
+
+# Comprobar que TimescaleDB responde
+docker compose exec timescaledb pg_isready -U postgres
+
+# Comprobar variables críticas del .env (sin mostrar valores)
+grep -E '^(DB_|PROD_JWT|PROD_MQTT)' .env | cut -d= -f1
+```
+
+Errores frecuentes:
+- **`Connection refused` a `timescaledb:5432`** → contenedor BD caído: `docker compose up -d timescaledb` y esperar 10 s.
+- **`password authentication failed`** → `.env` regenerado mal por GitHub Actions; revisa secrets `DB_PASSWORD`, `DB_USER`, `DB_NAME`.
+- **`OutOfMemoryError`** → VPS sin RAM durante el build; `docker stats --no-stream` y considera reiniciar servicios no esenciales.
+
+### Cloudflare vs origen
+
+| URL | Qué prueba |
+|---|---|
+| `https://wattimizer.com` | Cloudflare (naranja) → Nginx → frontend |
+| `https://api.wattimizer.com` | Directo al VPS (gris) → Nginx → backend |
+
+Si **api** devuelve 502 con firma `nginx`, el problema está en el VPS, no en Cloudflare. No pierdas tiempo cambiando ajustes de Cloudflare hasta confirmar que `curl -k` local devuelve 200.
+
+### Prevención en CI/CD
+
+El workflow `.github/workflows/deploy.yml` reinicia Nginx tras cada `docker compose up -d --build` para evitar el 502 por IP cacheada. Si tu VPS aún no tiene ese cambio, aplica el `restart nginx` manualmente después de cada deploy.
+
+---
+
 ## 13. Crear el usuario administrador de producción
 
 ```bash
