@@ -174,7 +174,7 @@ En `EventsRpc`, si no se encuentra el dispositivo, se crea uno con nombre `Nuevo
 
 ## 7. Emisión hacia Angular con STOMP
 
-**Backend:** `TelemetryBroadcaster`  
+**Backend:** `TelemetryBroadcaster`
 **Frontend:** `WebsocketService`
 
 El backend publica lecturas en:
@@ -311,4 +311,3 @@ flowchart TD
 - MQTT se expone en producción por el puerto 1883. El propio `docker-compose.yml` marca esto como deuda de seguridad porque es texto plano.
 - La tabla `readings` debe convertirse en hypertable antes de recibir grandes volúmenes de datos.
 - La simulación reutiliza la misma salida STOMP y la misma lógica de alertas, por lo que el frontend no distingue si una lectura viene de hardware real o de un simulador.
-

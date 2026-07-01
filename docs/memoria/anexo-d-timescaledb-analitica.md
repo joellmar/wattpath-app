@@ -399,4 +399,3 @@ WHERE is_simulated = true;
 - TimescaleDB permitiría continuous aggregates por hora o día para acelerar informes.
 - La compresión de chunks antiguos reduciría almacenamiento.
 - Para una instalación con muchos dispositivos físicos, convendría añadir índices específicos por `device_id` y `time` si el plan de ejecución lo necesitase.
-

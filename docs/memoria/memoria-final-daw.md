@@ -320,4 +320,3 @@ El MVP funcional está cubierto: autenticación, gestión de dispositivos, telem
 - Documentación de Mosquitto: <https://mosquitto.org/documentation>
 - Documentación de Docker Compose: <https://docs.docker.com/compose>
 - Repositorio del proyecto: <https://github.com/joellmar/wattpath-app>
-

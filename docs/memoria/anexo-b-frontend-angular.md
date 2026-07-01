@@ -332,4 +332,3 @@ sequenceDiagram
 ```
 
 Este flujo es importante en una aplicación multitenant. Aunque el JWT ya no exista, también se limpian los datos reactivos en memoria para evitar que queden visibles al cambiar de usuario.
-

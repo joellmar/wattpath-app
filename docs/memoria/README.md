@@ -19,4 +19,3 @@ La documentación se ha redactado a partir del código actual del repositorio, n
 - Usar `memoria-final-daw.md` como base del cuerpo principal del documento.
 - Incorporar los anexos técnicos en la parte final o enlazarlos desde los apartados 3 y 4.
 - Mantener los diagramas Mermaid como apoyo visual, ya que explican mejor el recorrido de datos entre frontend, backend, MQTT y base de datos.
-

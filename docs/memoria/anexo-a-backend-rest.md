@@ -48,7 +48,7 @@ La elección de no recibir `userId` desde el frontend es importante: el usuario 
 
 ### 3.1. `AuthController`
 
-**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/AuthController.java`  
+**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/AuthController.java`
 **Prefijo:** `/api/v1/auth`
 
 | Método | Ruta | Entrada | Salida | Intención |
@@ -71,7 +71,7 @@ El login clásico usa `UserProviderDetailsManager` como `AuthenticationManager`.
 
 ### 3.2. `DeviceController`
 
-**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/DeviceController.java`  
+**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/DeviceController.java`
 **Prefijo:** `/api/v1/devices`
 
 | Método | Ruta | Parámetros | Body | Respuesta |
@@ -103,7 +103,7 @@ La ruta `/claim` está pensada para asociar a un usuario un dispositivo físico 
 
 ### 3.3. `ReadingController`
 
-**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/ReadingController.java`  
+**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/ReadingController.java`
 **Prefijo:** `/api/v1/readings`
 
 | Método | Ruta | Parámetros | Respuesta | Uso |
@@ -130,7 +130,7 @@ Antes de devolver lecturas, el controlador comprueba que la MAC pertenece al usu
 
 ### 3.4. `ConsumptionController`
 
-**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/ConsumptionController.java`  
+**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/ConsumptionController.java`
 **Prefijo:** `/api/v1/analytics`
 
 | Método | Ruta | Query params | Respuesta |
@@ -153,7 +153,7 @@ Ejemplo de respuesta:
 
 ### 3.5. `AlertController`
 
-**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/AlertController.java`  
+**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/AlertController.java`
 **Prefijo:** `/api/v1/alerts`
 
 | Método | Ruta | Parámetros | Respuesta |
@@ -165,7 +165,7 @@ Ejemplo de respuesta:
 
 ### 3.6. `TariffController`
 
-**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/TariffController.java`  
+**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/TariffController.java`
 **Prefijo:** `/api/v1/tariffs`
 
 | Método | Ruta | Body | Seguridad | Respuesta |
@@ -195,7 +195,7 @@ public record TariffDto(
 
 ### 3.7. `UserTariffController`
 
-**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/UserTariffController.java`  
+**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/UserTariffController.java`
 **Prefijo:** `/api/v1/users/me/tariff`
 
 | Método | Ruta | Body | Respuesta |
@@ -281,4 +281,3 @@ sequenceDiagram
 ```
 
 La intención de este diseño es que el frontend no tenga que conocer detalles internos de entidades ni claves primarias compuestas. Angular trabaja con DTOs estables, mientras el backend protege el acceso y traduce el dominio a respuestas JSON.
-
