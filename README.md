@@ -19,5 +19,8 @@ Wattimizer resuelve el problema de la opacidad energética en las pymes. A trav�
 * [x] Fase 4: Desarrollo Frontend
 * [x] Fase 5: Despliegue (Deploy)
 
+## 📚 Documentación técnica DAW
+La memoria técnica y sus anexos están en [`docs/memoria/`](docs/memoria/README.md). Incluyen controladores REST, frontend Angular, telemetría MQTT y modelo analítico con TimescaleDB.
+
 ## 👨‍💻 Autor
 * **José Luis López Martos** - Desarrollador Full-Stack
