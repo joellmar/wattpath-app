@@ -153,6 +153,14 @@ Esta tabla no pertenece a un usuario. Es una dimensión global que traduce:
 peaje + zona + mes + tipo de día + hora local -> periodo P1-P6
 ```
 
+En el código se admiten los peajes `2.0TD`, `3.0TD`, `6.1TD` y `6.2TD`, y las zonas `PENINSULA`, `CANARIAS`, `ISLAS_BALEARES`, `CEUTA` y `MELILLA`. Sin embargo, el seed incluido en `seed-tariff-calendar-slots.sql` cubre actualmente solo:
+
+- Zonas: `PENINSULA` e `ISLAS_BALEARES`.
+- Peajes: `2.0TD` y `3.0TD`.
+- Total: 336 filas, 84 por combinación de peaje y zona.
+
+Esto significa que combinaciones como `CANARIAS`, `CEUTA`, `MELILLA`, `6.1TD` o `6.2TD` están aceptadas por el modelo, pero no tienen calendario cargado todavía. Si se selecciona una combinación sin seed, `CalendarResolverService` no encuentra periodo y los cálculos de coste funcionan en modo degradado, saltando esos tramos y devolviendo `0` cuando no puede resolver precios.
+
 Columnas:
 
 | Columna | Uso |

@@ -64,10 +64,16 @@ DTOs usados:
 public record LoginUser(String username, String password) {}
 public record LoginUserJwt(String statusCode, String jwt) {}
 public record OAuthTicketExchangeRequest(String ticket) {}
-public record RegisterRequest(String username, String password) {}
+public record RegisterRequest(
+    String username,
+    String password,
+    String confirmPassword,
+    Long tariffId
+) {}
 ```
 
 El login clásico usa `UserProviderDetailsManager` como `AuthenticationManager`. Si la autenticación es correcta, `JwtTokenService` genera el token con nombre de usuario y authorities.
+En el registro se envía también `confirmPassword`, porque el servicio valida que coincida con `password`. `tariffId` permite asociar una tarifa existente durante el alta si procede.
 
 ### 3.2. `DeviceController`
 
@@ -95,6 +101,15 @@ public record DeviceDto(
     String macAddress,
     Boolean isOn,
     Boolean simulated,
+    SimulationProfile simulationProfile
+) {}
+```
+
+`CreateSimulatedDeviceRequest`:
+
+```java
+public record CreateSimulatedDeviceRequest(
+    String name,
     SimulationProfile simulationProfile
 ) {}
 ```
@@ -161,6 +176,19 @@ Ejemplo de respuesta:
 | `GET` | `/` | `Principal` | `List<AlertDto>` |
 | `DELETE` | `/{id}` | `id`, `Principal` | `204 No Content` o `404` |
 
+`AlertDto`:
+
+```java
+public record AlertDto(
+    Long id,
+    String macAddress,
+    String username,
+    String type,
+    String message,
+    LocalDateTime createdAt
+) {}
+```
+
 `AlertDto` representa alertas generadas por el backend, especialmente excesos de potencia (`OVERPOWER`). Al borrar, `AlertService.deleteAlertForUser` elimina solo si la alerta pertenece al usuario autenticado.
 
 ### 3.6. `TariffController`
@@ -190,6 +218,22 @@ public record TariffDto(
     String energyCompany,
     List<PeriodDto> periods,
     List<TariffContractedPowerDto> contractedPowers
+) {}
+```
+
+DTOs anidados:
+
+```java
+public record PeriodDto(
+    Long id,
+    String periodCode,
+    BigDecimal priceKwh
+) {}
+
+public record TariffContractedPowerDto(
+    Long id,
+    String periodCode,
+    BigDecimal contractedPowerKw
 ) {}
 ```
 
