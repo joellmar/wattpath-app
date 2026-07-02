@@ -127,12 +127,17 @@ sequenceDiagram
   participant H as DeviceMessageHandler
   participant D as DeviceService
   participant R as ReadingService
+  participant W as TelemetryBroadcaster
+  participant A as AlertService
 
   MQTT->>H: Status + topic
   H->>H: extrae MAC del topic
   H->>D: findByMacAddress(mac)
   D-->>H: DeviceDto
   H->>R: saveEntity(deviceDto, status)
+  R-->>H: Reading
+  H->>W: broadcast(ReadingResponse)
+  H->>A: checkPowerThreshold(reading)
 ```
 
 En esta ruta el dispositivo debe existir, porque el estado por si solo no trae todo el contexto que se usa en el evento RPC.

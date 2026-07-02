@@ -393,19 +393,23 @@ El MVP esta cubierto en sus partes principales: autenticacion, gestion de dispos
 
 ## 7. Bibliografia y recursos
 
-- Documentacion oficial de Spring Boot.
-- Documentacion oficial de Spring Security.
-- Documentacion oficial de Spring Integration MQTT.
-- Documentacion oficial de Eclipse Paho.
-- Documentacion oficial de Angular.
-- Documentacion oficial de NgRx Signals.
-- Documentacion oficial de RxJS.
-- Documentacion oficial de PrimeNG.
-- Documentacion oficial de TimescaleDB.
-- Documentacion oficial de PostgreSQL.
-- Documentacion oficial de Mosquitto.
-- Documentacion oficial de Docker Compose.
-- Codigo fuente del proyecto Wattimizer en `https://github.com/joellmar/wattpath-app`.
+Recursos consultables para justificar las tecnologias utilizadas en el proyecto:
+
+| Recurso | URL |
+| --- | --- |
+| Documentacion oficial de Spring Boot | `https://docs.spring.io/spring-boot/` |
+| Documentacion oficial de Spring Security | `https://docs.spring.io/spring-security/reference/` |
+| Documentacion oficial de Spring Integration MQTT | `https://docs.spring.io/spring-integration/reference/mqtt.html` |
+| Documentacion oficial de Eclipse Paho | `https://eclipse.dev/paho/` |
+| Documentacion oficial de Angular | `https://angular.dev/` |
+| Documentacion oficial de NgRx Signals | `https://ngrx.io/guide/signals` |
+| Documentacion oficial de RxJS | `https://rxjs.dev/` |
+| Documentacion oficial de PrimeNG | `https://primeng.org/` |
+| Documentacion oficial de TimescaleDB | `https://docs.timescale.com/` |
+| Documentacion oficial de PostgreSQL | `https://www.postgresql.org/docs/` |
+| Documentacion oficial de Eclipse Mosquitto | `https://mosquitto.org/documentation/` |
+| Documentacion oficial de Docker Compose | `https://docs.docker.com/compose/` |
+| Repositorio del proyecto Wattimizer | `https://github.com/joellmar/wattpath-app` |
 
 ## 8. Anexos tecnicos
 
