@@ -29,7 +29,7 @@ seeds de usuarios/dispositivos
 
 ## 3. Hypertable `readings`
 
-**Entidad:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/entities/Reading.java`  
+**Entidad:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/entities/Reading.java`
 **Clave compuesta:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/entities/ReadingId.java`
 
 ### 3.1. Columnas
