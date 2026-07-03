@@ -52,8 +52,8 @@ public record ErrorResponse(
 
 ## A.3. `AuthController`
 
-**Archivo:** `controllers/AuthController.java`  
-**Ruta base:** `/api/v1/auth`  
+**Archivo:** `controllers/AuthController.java`
+**Ruta base:** `/api/v1/auth`
 **Servicios:** `UserProviderDetailsManager`, `JwtTokenService`, `AuthRegistrationService`, `OAuth2LoginTicketService`
 
 | Método | Endpoint | Entrada | Salida | Comportamiento |
@@ -78,8 +78,8 @@ El endpoint de registro admin está marcado como público en `SecurityConfig`, p
 
 ## A.4. `DeviceController`
 
-**Archivo:** `controllers/DeviceController.java`  
-**Ruta base:** `/api/v1/devices`  
+**Archivo:** `controllers/DeviceController.java`
+**Ruta base:** `/api/v1/devices`
 **Servicio:** `DeviceService`
 
 | Método | Endpoint | Parámetros | Body | Salida | Decisión de negocio |
@@ -120,8 +120,8 @@ public record CreateSimulatedDeviceRequest(
 
 ## A.5. `ReadingController`
 
-**Archivo:** `controllers/ReadingController.java`  
-**Ruta base:** `/api/v1/readings`  
+**Archivo:** `controllers/ReadingController.java`
+**Ruta base:** `/api/v1/readings`
 **Servicios:** `ReadingService`, `DeviceService`
 
 | Método | Endpoint | Parámetros | Salida | Comportamiento |
@@ -150,8 +150,8 @@ La API usa MAC como identificador funcional en lecturas porque la telemetría Io
 
 ## A.6. `ConsumptionController`
 
-**Archivo:** `controllers/ConsumptionController.java`  
-**Ruta base:** `/api/v1/analytics`  
+**Archivo:** `controllers/ConsumptionController.java`
+**Ruta base:** `/api/v1/analytics`
 **Servicios:** `ConsumptionService`, `DeviceService`
 
 | Método | Endpoint | Query params | Salida | Uso en frontend |
@@ -171,8 +171,8 @@ Para consumo fantasma se aplica el mismo cálculo, pero solo si la lectura cae e
 
 ## A.7. `TariffController`
 
-**Archivo:** `controllers/TariffController.java`  
-**Ruta base:** `/api/v1/tariffs`  
+**Archivo:** `controllers/TariffController.java`
+**Ruta base:** `/api/v1/tariffs`
 **Servicio:** `TariffService`
 
 | Método | Endpoint | Seguridad | Body | Salida | Comportamiento |
@@ -215,8 +215,8 @@ Esa separación permite calcular tanto el coste por kWh como las alertas de max�
 
 ## A.8. `UserTariffController`
 
-**Archivo:** `controllers/UserTariffController.java`  
-**Ruta base:** `/api/v1/users/me/tariff`  
+**Archivo:** `controllers/UserTariffController.java`
+**Ruta base:** `/api/v1/users/me/tariff`
 **Servicio:** `UserTariffService`
 
 | Método | Endpoint | Body | Salida | Intención |
@@ -238,8 +238,8 @@ Este controlador es uno de los puntos más importantes de seguridad funcional. N
 
 ## A.9. `AlertController`
 
-**Archivo:** `controllers/AlertController.java`  
-**Ruta base:** `/api/v1/alerts`  
+**Archivo:** `controllers/AlertController.java`
+**Ruta base:** `/api/v1/alerts`
 **Servicio:** `AlertService`
 
 | Método | Endpoint | Parámetros | Salida | Comportamiento |

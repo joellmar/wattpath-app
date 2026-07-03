@@ -46,7 +46,7 @@ La lectura del token se hace en el momento de procesar la petición. Esta decisi
 
 ## B.4. `TelemetryStore`
 
-**Archivo:** `store/telemetry.store.ts`  
+**Archivo:** `store/telemetry.store.ts`
 **Tecnología:** `signalStore`, `withState`, `withComputed`, `rxMethod`, `patchState`
 
 ### Estado
@@ -165,7 +165,7 @@ La conexión se activa en el constructor. El store decide qué topic observar se
 
 ### B.7.1. `DashboardComponent`
 
-**Archivo:** `components/dashboard/dashboard.component.ts`  
+**Archivo:** `components/dashboard/dashboard.component.ts`
 **Plantilla:** `components/dashboard/dashboard.html`
 
 Responsabilidad: mostrar la situación energética de la empresa en tiempo real.

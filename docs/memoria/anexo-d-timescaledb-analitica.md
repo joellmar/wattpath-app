@@ -242,7 +242,7 @@ La analítica se implementa en `ConsumptionService`, no en una vista SQL materia
 
 ### D.8.1. Coste acumulado por intervalo
 
-**Endpoint:** `GET /api/v1/analytics/cost`  
+**Endpoint:** `GET /api/v1/analytics/cost`
 **Método:** `ConsumptionService.calculateCostInPeriod(macAddress, start, end)`
 
 Pasos:
@@ -264,7 +264,7 @@ Se ignoran deltas nulos o negativos porque pueden indicar reinicio del hardware,
 
 ### D.8.2. Consumo fantasma
 
-**Endpoint:** `GET /api/v1/analytics/ghost-consumption`  
+**Endpoint:** `GET /api/v1/analytics/ghost-consumption`
 **Método:** `ConsumptionService.calculateGhostCost(macAddress, start, end)`
 
 Usa el mismo cálculo que el coste acumulado, pero filtra por ventana local:
