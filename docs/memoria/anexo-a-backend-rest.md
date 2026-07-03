@@ -24,7 +24,7 @@ La seguridad se configura en `config/SecurityConfig.java`:
 | Resto de `/api/v1/tariffs/**` | `ROLE_ADMIN` |
 | Cualquier otra ruta | Usuario autenticado |
 
-La autorización de recursos propios se comprueba en los controladores y servicios comparando el propietario con `Principal.getName()`. Es una decisión importante porque evita que el frontend pueda consultar datos de otra empresa simplemente cambiando una MAC o un id.
+La autorización de recursos propios se comprueba en los controladores y servicios comparando el propietario con `Principal.getName()` en las operaciones de consulta, claim, simulación, edición, borrado, lecturas, analítica y alertas. La excepción es la ruta directa `POST /api/v1/devices`, que guarda el `DeviceDto` recibido y se mantiene como alta simple; la interfaz actual usa `/claim` o `/simulated`, que sí toman el usuario del JWT.
 
 ## A.2. Gestión de errores
 
@@ -35,7 +35,7 @@ public record ErrorResponse(
         int status,
         String error,
         String message,
-        String timestamp
+        LocalDateTime timestamp
 ) {}
 ```
 
@@ -86,7 +86,7 @@ El endpoint de registro admin está marcado como público en `SecurityConfig`, p
 |---|---|---|---|---|---|
 | `GET` | `/api/v1/devices` | `Principal` | - | `List<DeviceDto>` | Lista solo dispositivos del usuario autenticado. |
 | `GET` | `/api/v1/devices/{id}` | Path `id`, `Principal` | - | `DeviceDto` o 403 | Comprueba que `device.username` coincida con el JWT. |
-| `POST` | `/api/v1/devices` | - | `DeviceDto` | `201 DeviceDto` | Alta directa de dispositivo. En la UI actual se prefiere `/claim`. |
+| `POST` | `/api/v1/devices` | - | `DeviceDto` | `201 DeviceDto` | Alta directa basada en el DTO recibido. En la UI actual se prefiere `/claim` porque vincula al usuario autenticado. |
 | `POST` | `/api/v1/devices/claim` | `Principal` | `DeviceDto` con `macAddress`, `name` | `200 DeviceDto` | Vincula una MAC física al usuario actual o registra el dispositivo si procede. |
 | `POST` | `/api/v1/devices/simulated/demo-pack` | `Principal` | - | `201 List<DeviceDto>` | Crea un simulador por cada perfil que el usuario aún no tenga. |
 | `POST` | `/api/v1/devices/simulated` | `Principal` | `CreateSimulatedDeviceRequest` | `201 DeviceDto` | Crea un dispositivo sintético con MAC `SIM...`. |

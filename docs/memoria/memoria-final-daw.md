@@ -195,7 +195,7 @@ El backend está organizado en controladores REST, servicios de negocio, reposit
 - Las mutaciones de `/api/v1/tariffs/**` exigen `ROLE_ADMIN`.
 - El resto de endpoints requiere token válido.
 
-La lógica de negocio evita que el frontend mande identificadores de usuario en operaciones sensibles. Por ejemplo, `UserTariffController` extrae siempre el usuario desde `Principal`, y los endpoints de lecturas, analítica y dispositivos comprueban que la MAC o el dispositivo pertenezcan al usuario autenticado.
+La lógica de negocio evita que el frontend mande identificadores de usuario en operaciones sensibles. Por ejemplo, `UserTariffController` extrae siempre el usuario desde `Principal`, y los endpoints de lecturas, analítica, claim, simulación, consulta, edición y borrado de dispositivos comprueban que la MAC o el dispositivo pertenezcan al usuario autenticado. La ruta directa `POST /api/v1/devices` queda como alta simple basada en el `DeviceDto` recibido y no es la ruta usada por la pantalla actual de dispositivos.
 
 El detalle de endpoints, parámetros y DTOs está en [Anexo A](./anexo-a-backend-rest.md).
 

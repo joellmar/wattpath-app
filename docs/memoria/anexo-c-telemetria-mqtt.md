@@ -123,7 +123,8 @@ Dentro de `switch:0` se usan:
 |---|---|
 | `apower` | Potencia activa instantánea en W. |
 | `aenergy.total` | Energía acumulada en Wh. |
-| `output` | Estado del relé. |
+
+En esta rama no se persiste el estado del relé. `EventsRpcMapper` ignora `isOn`, así que `events/rpc` se utiliza para potencia, energía y tiempo, pero no para encendido/apagado.
 
 ### C.5.2. `Status`
 
@@ -132,6 +133,14 @@ Dentro de `switch:0` se usan:
 ```java
 String macAddress = topic.split("/")[0].split("-")[1];
 ```
+
+Campos usados:
+
+| Campo | Significado |
+|---|---|
+| `output` | Estado del relé, mapeado a `Reading.isOn`. |
+| `apower` | Potencia activa instantánea en W. |
+| `aenergy.total` | Energía acumulada en Wh. |
 
 ## C.6. Handler transaccional
 
@@ -187,7 +196,7 @@ Campos persistidos:
 | `device` | Dispositivo encontrado o creado por MAC. |
 | `powerW` | `apower`. |
 | `energyTotalKwh` | `aenergy.total`, convertido de Wh a kWh si procede. |
-| `isOn` | Estado del relé. |
+| `isOn` | Estado del relé solo cuando la lectura viene de `Status`; en `EventsRpc` se ignora. |
 
 La decisión de guardar `energyTotalKwh` como odómetro acumulado es clave para analítica. Permite calcular coste por diferencia entre lecturas, que es más estable que integrar potencia instantánea con intervalos variables.
 
