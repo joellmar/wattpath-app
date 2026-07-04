@@ -68,7 +68,7 @@ Algunos controladores devuelven `403` sin cuerpo cuando el usuario autenticado n
 
 ## 4. Controlador de autenticación
 
-**Archivo:** `controllers/AuthController.java`  
+**Archivo:** `controllers/AuthController.java`
 **Ruta base:** `/api/v1/auth`
 
 | Método | Endpoint | Entrada | Salida | Uso |
@@ -99,7 +99,7 @@ La parte OAuth2 no devuelve el JWT directamente en la URL. Primero se genera un 
 
 ## 5. Controlador de dispositivos
 
-**Archivo:** `controllers/DeviceController.java`  
+**Archivo:** `controllers/DeviceController.java`
 **Ruta base:** `/api/v1/devices`
 
 | Método | Endpoint | Parámetros | Body | Respuesta |
@@ -136,7 +136,7 @@ La operación `/claim` es la más relevante para dispositivos físicos. Recibe u
 
 ## 6. Controlador de lecturas
 
-**Archivo:** `controllers/ReadingController.java`  
+**Archivo:** `controllers/ReadingController.java`
 **Ruta base:** `/api/v1/readings`
 
 | Método | Endpoint | Parámetros | Respuesta |
@@ -163,7 +163,7 @@ Antes de devolver lecturas, el controlador comprueba que la MAC pertenece al usu
 
 ## 7. Controlador de analíticas
 
-**Archivo:** `controllers/ConsumptionController.java`  
+**Archivo:** `controllers/ConsumptionController.java`
 **Ruta base:** `/api/v1/analytics`
 
 | Método | Endpoint | Query params | Respuesta |
@@ -192,7 +192,7 @@ La respuesta se construye como `Map<String, Object>`, no como DTO dedicado:
 
 ## 8. Controlador de tarifas del catálogo
 
-**Archivo:** `controllers/TariffController.java`  
+**Archivo:** `controllers/TariffController.java`
 **Ruta base:** `/api/v1/tariffs`
 
 | Método | Endpoint | Rol | Body | Respuesta |
@@ -234,7 +234,7 @@ El catálogo representa plantillas maestras. Las tarifas privadas de usuario se 
 
 ## 9. Controlador de tarifa privada del usuario
 
-**Archivo:** `controllers/UserTariffController.java`  
+**Archivo:** `controllers/UserTariffController.java`
 **Ruta base:** `/api/v1/users/me/tariff`
 
 | Método | Endpoint | Body | Respuesta |
@@ -256,7 +256,7 @@ El diseño evita IDOR porque la ruta no contiene `userId`. El usuario se obtiene
 
 ## 10. Controlador de alertas
 
-**Archivo:** `controllers/AlertController.java`  
+**Archivo:** `controllers/AlertController.java`
 **Ruta base:** `/api/v1/alerts`
 
 | Método | Endpoint | Parámetros | Respuesta |
