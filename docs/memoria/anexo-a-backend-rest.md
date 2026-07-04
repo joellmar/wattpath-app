@@ -37,7 +37,7 @@ Las rutas públicas son:
 
 El resto de rutas requieren autenticación. Además, las mutaciones del catálogo de tarifas exigen rol `ROLE_ADMIN` mediante `@PreAuthorize("hasRole('ADMIN')")`.
 
-Una decisión importante del diseño es que los recursos privados se filtran por el `Principal` extraído del JWT. Por ejemplo, en dispositivos y lecturas no se acepta un `userId` enviado desde Angular, porque eso permitiría intentar acceder a datos de otro usuario cambiando un parámetro.
+Una decisión importante del diseño es que las lecturas, actualizaciones y borrados de recursos privados se filtran por el `Principal` extraído del JWT. Por ejemplo, en dispositivos y lecturas no se acepta un `userId` enviado desde Angular, porque eso permitiría intentar acceder a datos de otro usuario cambiando un parámetro. La excepción documentada aparte es `POST /api/v1/devices`, que recibe un `DeviceDto` y persiste el DTO tal como lo procesa el servicio.
 
 ## 3. Formato de errores
 

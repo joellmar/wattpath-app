@@ -28,7 +28,7 @@ flowchart LR
   Handler --> ReadingService[ReadingService]
   ReadingService --> DB[(readings)]
   Handler --> Broadcaster[TelemetryBroadcaster]
-  Broadcaster --> STOMP[/topic/readings/{mac}/]
+  Broadcaster --> STOMP["/topic/readings/{macAddress}"]
   Handler --> Alerts[AlertService]
 ```
 

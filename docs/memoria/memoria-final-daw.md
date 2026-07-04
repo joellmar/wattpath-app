@@ -185,7 +185,7 @@ El diseño visual se apoya en PrimeNG y Tailwind. La interfaz prioriza tarjetas 
 
 ### 4.2. Desarrollo del backend
 
-El backend expone controladores REST bajo `/api/v1`. La seguridad es stateless y se basa en JWT. La propiedad de recursos se comprueba a partir del `Principal`, no recibiendo `userId` desde el cliente. Esto es especialmente importante en dispositivos, lecturas y tarifa privada, porque evita que un usuario consulte datos de otro modificando una URL.
+El backend expone controladores REST bajo `/api/v1`. La seguridad es stateless y se basa en JWT. En las operaciones privadas de consulta, actualización y borrado, la propiedad de recursos se comprueba a partir del `Principal`, no recibiendo `userId` desde el cliente. Esto es especialmente importante en dispositivos, lecturas y tarifa privada, porque evita que un usuario consulte datos de otro modificando una URL.
 
 La lógica de negocio se reparte en servicios:
 
