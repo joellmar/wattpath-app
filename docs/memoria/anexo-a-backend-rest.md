@@ -30,8 +30,8 @@ No todos los errores pasan por este handler. Algunos controladores devuelven `40
 
 ## A.3. `AuthController`
 
-**Archivo:** `controllers/AuthController.java`  
-**Base:** `/api/v1/auth`  
+**Archivo:** `controllers/AuthController.java`
+**Base:** `/api/v1/auth`
 **Acceso:** público.
 
 | Método | Ruta | Entrada | Salida | Lógica |
@@ -52,8 +52,8 @@ DTOs:
 
 ## A.4. `DeviceController`
 
-**Archivo:** `controllers/DeviceController.java`  
-**Base:** `/api/v1/devices`  
+**Archivo:** `controllers/DeviceController.java`
+**Base:** `/api/v1/devices`
 **Acceso:** usuario autenticado.
 
 | Método | Ruta | Entrada | Salida | Control de acceso |
@@ -78,8 +78,8 @@ La eliminación de dispositivos se resolvió en `DeviceService.deleteById`: prim
 
 ## A.5. `ReadingController`
 
-**Archivo:** `controllers/ReadingController.java`  
-**Base:** `/api/v1/readings`  
+**Archivo:** `controllers/ReadingController.java`
+**Base:** `/api/v1/readings`
 **Acceso:** usuario autenticado.
 
 | Método | Ruta | Parámetros | Salida | Lógica |
@@ -100,8 +100,8 @@ La entidad `Reading` usa clave compuesta `(time, device_id)`, definida mediante 
 
 ## A.6. `ConsumptionController`
 
-**Archivo:** `controllers/ConsumptionController.java`  
-**Base:** `/api/v1/analytics`  
+**Archivo:** `controllers/ConsumptionController.java`
+**Base:** `/api/v1/analytics`
 **Acceso:** usuario autenticado.
 
 | Método | Ruta | Parámetros | Salida |
@@ -115,8 +115,8 @@ La respuesta no usa un DTO tipado, sino un `Map`. Para una versión futura serí
 
 ## A.7. `AlertController`
 
-**Archivo:** `controllers/AlertController.java`  
-**Base:** `/api/v1/alerts`  
+**Archivo:** `controllers/AlertController.java`
+**Base:** `/api/v1/alerts`
 **Acceso:** usuario autenticado.
 
 | Método | Ruta | Entrada | Salida | Lógica |
@@ -134,7 +134,7 @@ Las alertas actuales se generan por potencia excesiva, con tipo funcional `OVERP
 
 ## A.8. `TariffController`
 
-**Archivo:** `controllers/TariffController.java`  
+**Archivo:** `controllers/TariffController.java`
 **Base:** `/api/v1/tariffs`
 
 | Método | Ruta | Entrada | Salida | Rol |
@@ -157,8 +157,8 @@ DTOs de tarifa:
 
 ## A.9. `UserTariffController`
 
-**Archivo:** `controllers/UserTariffController.java`  
-**Base:** `/api/v1/users/me/tariff`  
+**Archivo:** `controllers/UserTariffController.java`
+**Base:** `/api/v1/users/me/tariff`
 **Acceso:** usuario autenticado.
 
 | Método | Ruta | Entrada | Salida | Lógica |

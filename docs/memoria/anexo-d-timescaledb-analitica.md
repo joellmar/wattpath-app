@@ -37,7 +37,7 @@ SELECT create_hypertable('readings', 'time', migrate_data => true);
 
 ## D.3. Tabla `readings`
 
-**Entidad:** `entities/Reading.java`  
+**Entidad:** `entities/Reading.java`
 **Clave compuesta:** `entities/ReadingId.java`
 
 | Columna | Tipo lógico | Descripción |
@@ -179,7 +179,7 @@ Esta consulta contiene lógica para cubrir días tipo `D` y franjas que llegan a
 
 ### D.7.1. Coste energético
 
-**Servicio:** `services/ConsumptionService.java`  
+**Servicio:** `services/ConsumptionService.java`
 **Endpoint:** `GET /api/v1/analytics/cost`
 
 Algoritmo:
@@ -206,7 +206,7 @@ La decisión de usar el odómetro acumulado (`energy_total_kwh`) es correcta por
 
 ### D.7.2. Consumo fantasma
 
-**Servicio:** `ConsumptionService.calculateGhostCost`  
+**Servicio:** `ConsumptionService.calculateGhostCost`
 **Endpoint:** `GET /api/v1/analytics/ghost-consumption`
 
 Usa el mismo enfoque que el coste total, pero solo considera lecturas dentro de la franja nocturna `00:00` a `05:59` en hora local. La intención es detectar consumo fuera de horario productivo.
