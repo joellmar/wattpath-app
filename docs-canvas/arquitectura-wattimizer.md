@@ -116,8 +116,12 @@ erDiagram
     USERS }o--o| TARIFFS : tiene
     TARIFFS ||--o{ PERIODS : precios
     TARIFFS ||--o{ TARIFF_CONTRACTED_POWERS : potencias
-    TARIFF_CALENDAR_SLOTS }o--|| PERIODS : determina_periodo
+    TARIFF_CALENDAR_SLOTS }o--|| PERIODS : lookup_logico_period_code
 ```
+
+En este resumen visual, `TARIFF_CALENDAR_SLOTS` se une a `PERIODS` de forma
+conceptual por `period_code`, peaje y zona. No representa una FK fisica en base de
+datos.
 
 ## 7. Ruta de calculo economico
 

@@ -63,7 +63,7 @@ una tarifa electrica y analizar el coste economico asociado a sus lecturas.
 | --- | --- | --- |
 | Usuario registrado (`ROLE_USER`) | Gestiona sus dispositivos, elige una tarifa del catalogo, consulta dashboard y alertas. | `RegisterRequest`, `AuthRegistrationService.registerUser`, rutas protegidas de Angular. |
 | Administrador (`ROLE_ADMIN`) | Puede crear, editar y borrar tarifas del catalogo maestro. | `POST /api/v1/tariffs`, `POST /api/v1/tariffs/{id}`, `DELETE /api/v1/tariffs/{id}` con `@PreAuthorize`. |
-| Usuario sistema (`SYSTEM`) | Propietario temporal de dispositivos fisicos detectados antes de ser reclamados. | `DeviceService.claimOrRegisterDevice`, semillas de desarrollo. |
+| Dispositivo sin propietario | Estado temporal de dispositivos fisicos detectados o sembrados antes de que un usuario los reclame; en base de datos quedan con `user_id = NULL`. | `ReadingService.saveEntity(EventsRpc)`, `DeviceService.claimOrRegisterDevice`, `04-seed-device-shelly.sql`. |
 
 ## 2. Fase 1: Analisis funcional
 
@@ -129,8 +129,11 @@ erDiagram
     USERS }o--o| TARIFFS : tiene
     TARIFFS ||--o{ PERIODS : define
     TARIFFS ||--o{ TARIFF_CONTRACTED_POWERS : limita
-    TARIFF_CALENDAR_SLOTS }o--|| PERIODS : resuelve_periodo
+    TARIFF_CALENDAR_SLOTS }o--|| PERIODS : lookup_logico_period_code
 ```
+
+La relacion entre `tariff_calendar_slots` y `periods` es un cruce logico por
+`period_code`, peaje y zona; no hay una clave foranea fisica entre ambas tablas.
 
 El modelo relacional y los scripts SQL se explican con detalle en el
 [Anexo D](./anexo-d-timescaledb-analitica.md).
