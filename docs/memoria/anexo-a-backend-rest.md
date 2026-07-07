@@ -53,7 +53,7 @@ El JWT generado por `JwtTokenService` incluye:
 
 ### 3.1. `AuthController`
 
-Archivo: `controllers/AuthController.java`  
+Archivo: `controllers/AuthController.java`
 Ruta base: `/api/v1/auth`
 
 | Metodo | Ruta | Entrada | Salida | Estado esperado |
@@ -70,7 +70,7 @@ expuesto en la URL del navegador.
 
 ### 3.2. `DeviceController`
 
-Archivo: `controllers/DeviceController.java`  
+Archivo: `controllers/DeviceController.java`
 Ruta base: `/api/v1/devices`
 
 | Metodo | Ruta | Parametros | Entrada | Salida |
@@ -94,7 +94,7 @@ lo que venga en el DTO. Para el uso normal de la interfaz se prefieren
 
 ### 3.3. `ReadingController`
 
-Archivo: `controllers/ReadingController.java`  
+Archivo: `controllers/ReadingController.java`
 Ruta base: `/api/v1/readings`
 
 | Metodo | Ruta | Parametros | Salida |
@@ -111,7 +111,7 @@ debe permitir acceder a datos de otro cliente.
 
 ### 3.4. `ConsumptionController`
 
-Archivo: `controllers/ConsumptionController.java`  
+Archivo: `controllers/ConsumptionController.java`
 Ruta base: `/api/v1/analytics`
 
 | Metodo | Ruta | Query params | Respuesta |
@@ -125,7 +125,7 @@ el controlador, sino en `ConsumptionService`.
 
 ### 3.5. `AlertController`
 
-Archivo: `controllers/AlertController.java`  
+Archivo: `controllers/AlertController.java`
 Ruta base: `/api/v1/alerts`
 
 | Metodo | Ruta | Parametros | Salida |
@@ -138,7 +138,7 @@ solo se elimina si la alerta pertenece al usuario autenticado.
 
 ### 3.6. `TariffController`
 
-Archivo: `controllers/TariffController.java`  
+Archivo: `controllers/TariffController.java`
 Ruta base: `/api/v1/tariffs`
 
 | Metodo | Ruta | Seguridad | Entrada | Salida |
@@ -154,7 +154,7 @@ REST, pero el frontend esta adaptado a ella en `TariffService.updateCatalogTarif
 
 ### 3.7. `UserTariffController`
 
-Archivo: `controllers/UserTariffController.java`  
+Archivo: `controllers/UserTariffController.java`
 Ruta base: `/api/v1/users/me/tariff`
 
 | Metodo | Ruta | Entrada | Salida |

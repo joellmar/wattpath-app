@@ -259,7 +259,7 @@ que el componente lo pinte.
 
 ### 5.1. `LoginComponent`
 
-Ruta: `/login`  
+Ruta: `/login`
 Archivo: `components/login/login.component.ts`
 
 Usa formulario reactivo con `username` y `password`. En login correcto guarda el
@@ -276,7 +276,7 @@ permanentemente en estado de fallo.
 
 ### 5.2. `RegisterComponent`
 
-Ruta: `/register`  
+Ruta: `/register`
 Archivo: `components/register/register.component.ts`
 
 Formulario reactivo con email, password y confirmacion. Incluye validador de grupo
@@ -284,7 +284,7 @@ para comprobar que ambas contrasenas coinciden antes de llamar al backend.
 
 ### 5.3. `OAuthCallbackComponent`
 
-Ruta: `/auth/oauth/callback`  
+Ruta: `/auth/oauth/callback`
 Archivo: `components/oauth-callback/oauth-callback.component.ts`
 
 Lee `?ticket=` de la URL, llama a `AuthService.exchangeOAuthTicket` y guarda el
@@ -303,7 +303,7 @@ cerrar sesion.
 
 ### 5.5. `DashboardComponent`
 
-Ruta: `/dashboard`  
+Ruta: `/dashboard`
 Archivo: `components/dashboard/dashboard.component.ts`
 
 Responsabilidades:
@@ -336,7 +336,7 @@ cambia el dispositivo o la tarifa, se recalculan las metricas necesarias.
 
 ### 5.6. `DevicesComponent`
 
-Ruta: `/devices`  
+Ruta: `/devices`
 Archivo: `components/devices/devices.component.ts`
 
 Gestiona alta fisica, simuladores, demo pack, borrado, detalle y edicion. Usa
@@ -359,7 +359,7 @@ Tras cada mutacion recarga el listado mediante `store.loadDevices()`.
 
 ### 5.7. `TariffComponent`
 
-Ruta: `/tariffs`  
+Ruta: `/tariffs`
 Archivo: `components/tariff/tariff.component.ts`
 
 Es el componente mas complejo del frontend. Gestiona dos contextos:
@@ -378,7 +378,7 @@ Computed:
 
 ### 5.8. `AlertsComponent`
 
-Ruta: `/alerts`  
+Ruta: `/alerts`
 Archivo: `components/alerts/alerts.component.ts`
 
 Lista alertas con `GET /api/v1/alerts` y permite descartarlas con

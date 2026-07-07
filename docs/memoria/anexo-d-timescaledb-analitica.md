@@ -149,7 +149,7 @@ erDiagram
 
 ## 5. Tabla `readings`
 
-Entidad: `entities/Reading.java`  
+Entidad: `entities/Reading.java`
 Repositorio: `repositories/ReadingRepository.java`
 
 Campos principales:
@@ -292,7 +292,7 @@ Limitaciones actuales:
 
 ## 9. Analitica de coste total
 
-Controlador: `ConsumptionController`  
+Controlador: `ConsumptionController`
 Servicio: `ConsumptionService`
 
 Endpoint:
