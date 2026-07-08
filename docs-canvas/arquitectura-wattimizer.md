@@ -134,7 +134,7 @@ sequenceDiagram
     participant CAL as CalendarResolverService
     participant DB as PostgreSQL/TimescaleDB
 
-    UI->>API: GET /analytics/cost?mac,start,end
+    UI->>API: GET /api/v1/analytics/cost?macAddress,start,end
     API->>CS: calculateCostInPeriod(mac,start,end)
     CS->>RR: findReadingsInInterval(mac,start,end)
     RR->>DB: lecturas ordenadas por time

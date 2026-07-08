@@ -87,7 +87,7 @@ una tarifa electrica y analizar el coste economico asociado a sus lecturas.
 | HU-02 | Como usuario, quiero iniciar sesion para consultar mis dispositivos. | `POST /api/v1/auth/login` devuelve `LoginUserJwt`; Angular guarda `auth_token`; las rutas protegidas quedan accesibles. | Imprescindible |
 | HU-03 | Como usuario, quiero vincular un enchufe fisico por MAC para asociarlo a mi cuenta. | `POST /api/v1/devices/claim` crea o reclama el dispositivo; no permite reclamar uno de otro usuario. | Imprescindible |
 | HU-04 | Como usuario, quiero crear dispositivos simulados para probar el sistema sin hardware real. | `POST /api/v1/devices/simulated` valida nombre y perfil; el simulador genera lecturas periodicas. | Imprescindible |
-| HU-05 | Como usuario, quiero ver la potencia actual y el historico reciente de un dispositivo. | El dashboard carga `/readings/device/{mac}/recent` y se actualiza por STOMP en `/topic/readings/{mac}`. | Imprescindible |
+| HU-05 | Como usuario, quiero ver la potencia actual y el historico reciente de un dispositivo. | El dashboard carga `/api/v1/readings/device/{macAddress}/recent?seconds=120` y se actualiza por STOMP en `/topic/readings/{mac}`. | Imprescindible |
 | HU-06 | Como usuario, quiero asignar una tarifa para calcular costes reales. | `GET /api/v1/users/me/tariff` informa si hay tarifa; `POST` clona plantilla o guarda contrato propio. | Imprescindible |
 | HU-07 | Como usuario, quiero ver el coste diario y el consumo fantasma. | El dashboard consulta `/analytics/cost` y `/analytics/ghost-consumption` con rango temporal. | Imprescindible |
 | HU-08 | Como usuario, quiero recibir alertas si supero la potencia contratada. | `AlertService.checkPowerThreshold` compara potencia W con kW contratados y publica alerta STOMP. | Imprescindible |
@@ -98,7 +98,8 @@ una tarifa electrica y analizar el coste economico asociado a sus lecturas.
 ### 2.3. Gestion del trabajo
 
 - **Repositorio:** <https://github.com/joellmar/wattpath-app>
-- **Rama de documentacion:** `cursor/documentaci-n-t-cnica-del-proyecto-af2f`
+- **Rama de documentacion:** rama especifica creada desde `main` para esta entrega,
+  integrada mediante pull request.
 - **Flujo usado en el repositorio:** ramas de trabajo sobre `main`, commits pequenos y pull request final.
 - **Kanban:** no hay una captura versionada dentro del repositorio. Para la entrega maquetada se debe insertar la captura real del tablero de GitHub Projects si el centro la exige como evidencia visual.
 
