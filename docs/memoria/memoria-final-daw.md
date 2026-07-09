@@ -208,7 +208,7 @@ Wireframe textual de la pantalla principal:
 
 ### 4.2. Desarrollo del backend
 
-El backend expone una API REST bajo `/api/v1`. Spring Security trabaja sin sesion de servidor (`SessionCreationPolicy.STATELESS`) y valida JWT antes de ejecutar los controladores. Los recursos multitenant importantes no reciben `userId` desde el cliente; usan `Principal.getName()` para evitar que un usuario consulte datos de otro.
+El backend expone una API REST bajo `/api/v1`. Spring Security trabaja sin sesion de servidor (`SessionCreationPolicy.STATELESS`) y valida JWT antes de ejecutar los controladores. Los flujos principales usados por la interfaz, como tarifa privada, `claim` de dispositivos y simuladores, obtienen el propietario desde `Principal.getName()`. La excepcion activa es el alta directa `POST /api/v1/devices`, que persiste el `username` recibido en `DeviceDto` y queda documentada como endpoint heredado frente al flujo recomendado de `claim`.
 
 La logica de negocio se reparte asi:
 

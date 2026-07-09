@@ -2,9 +2,9 @@
 
 ## 1. Vision general
 
-El backend de Wattimizer esta construido con Spring Boot 4.0.5 y Java 26. Su API publica se concentra bajo `/api/v1` y usa JSON como formato de intercambio con Angular. La autenticacion se basa en JWT y OAuth2; una vez autenticado, el usuario se identifica en los controladores mediante `Principal.getName()`.
+El backend de Wattimizer esta construido con Spring Boot 4.0.5 y Java 26. Su API publica se concentra bajo `/api/v1` y usa JSON como formato de intercambio con Angular. La autenticacion se basa en JWT y OAuth2; en los flujos principales de la interfaz, el usuario autenticado se identifica mediante `Principal.getName()`.
 
-La decision mas importante de diseno es que los recursos sensibles no reciben un `userId` desde el cliente. Por ejemplo, la tarifa personal se gestiona en `/api/v1/users/me/tariff` y los dispositivos se filtran por el usuario que va dentro del token. Esto reduce el riesgo de IDOR, porque el cliente no puede pedir datos de otro usuario cambiando un parametro.
+La decision mas importante de diseno es que los recursos sensibles de uso normal no reciben un `userId` desde el cliente. Por ejemplo, la tarifa personal se gestiona en `/api/v1/users/me/tariff`, el `claim` de dispositivos usa el usuario del token y los simuladores se crean para el `Principal` autenticado. Existe una excepcion activa: `POST /api/v1/devices` acepta un `DeviceDto` completo y `DeviceDtoMapper` mapea `username` hacia la entidad. Por eso el flujo recomendado y usado por Angular es `/claim` o `/simulated`, no el alta directa heredada.
 
 ## 2. Seguridad HTTP
 
@@ -54,14 +54,14 @@ Ruta base: `/api/v1/devices`
 |---|---|---|---|---|
 | `GET` | `/api/v1/devices` | Token JWT | - | `List<DeviceDto>` |
 | `GET` | `/api/v1/devices/{id}` | `id` | - | `DeviceDto` o `403` |
-| `POST` | `/api/v1/devices` | - | `DeviceDto` | `DeviceDto`, `201` |
+| `POST` | `/api/v1/devices` | - | `DeviceDto` | `DeviceDto`, `201`; endpoint heredado que persiste el `username` recibido en el DTO |
 | `POST` | `/api/v1/devices/claim` | Token JWT | `DeviceDto` con `macAddress` y `name` | `DeviceDto` |
 | `POST` | `/api/v1/devices/simulated` | Token JWT | `CreateSimulatedDeviceRequest` | `DeviceDto`, `201` |
 | `POST` | `/api/v1/devices/simulated/demo-pack` | Token JWT | - | `List<DeviceDto>`, `201` |
 | `PUT` | `/api/v1/devices/{id}` | `id` | `DeviceDto` | `DeviceDto` |
 | `DELETE` | `/api/v1/devices/{id}` | `id` | - | `204 No Content` |
 
-`GET`, `PUT` y `DELETE` comprueban la propiedad del dispositivo. En el borrado, antes de eliminar la fila de `devices`, el servicio elimina las lecturas y alertas asociadas. Esta decision evita errores de integridad referencial y deja el sistema limpio.
+`GET`, `PUT` y `DELETE` comprueban la propiedad del dispositivo. Los endpoints recomendados para altas desde la UI son `/claim`, `/simulated` y `/simulated/demo-pack`, porque atan el dispositivo al usuario autenticado. En el borrado, antes de eliminar la fila de `devices`, el servicio elimina las lecturas y alertas asociadas. Esta decision evita errores de integridad referencial y deja el sistema limpio.
 
 DTOs:
 
