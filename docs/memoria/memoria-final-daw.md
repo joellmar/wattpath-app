@@ -2,7 +2,7 @@
 
 ## Indice de anexos tecnicos
 
-- [Anexo A. Backend REST con Spring Boot](./anexo-a-backend-rest.md)
+- [Anexo A. Backend REST con Spring Boot: Controladores REST, parametros y DTOs](./anexo-a-backend-rest.md)
 - [Anexo B. Frontend Angular, RxJS y NgRx Signals](./anexo-b-frontend-angular.md)
 - [Anexo C. Ingesta de telemetria MQTT y simulacion IoT](./anexo-c-telemetria-mqtt.md)
 - [Anexo D. TimescaleDB, modelo relacional y consultas analiticas](./anexo-d-timescaledb-analitica.md)
