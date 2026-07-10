@@ -333,15 +333,15 @@ El MVP está cubierto en los aspectos principales: autenticación, dispositivos,
 
 ## 7. Bibliografía y recursos
 
-- Documentación oficial de Spring Boot.
-- Documentación oficial de Spring Security.
-- Documentación oficial de Spring Integration MQTT.
-- Documentación oficial de Angular.
-- Documentación oficial de NgRx Signals.
-- Documentación oficial de RxJS.
-- Documentación oficial de TimescaleDB.
-- Documentación oficial de Eclipse Mosquitto.
-- Circular CNMC 3/2020, utilizada como referencia funcional para periodos tarifarios TD.
+- Documentación oficial de Spring Boot: <https://spring.io/projects/spring-boot>
+- Documentación oficial de Spring Security: <https://spring.io/projects/spring-security>
+- Documentación oficial de Spring Integration MQTT: <https://docs.spring.io/spring-integration/reference/mqtt.html>
+- Documentación oficial de Angular: <https://angular.dev/>
+- Documentación oficial de NgRx Signals: <https://ngrx.io/guide/signals>
+- Documentación oficial de RxJS: <https://rxjs.dev/>
+- Documentación oficial de TimescaleDB: <https://docs.timescale.com/>
+- Documentación oficial de Eclipse Mosquitto: <https://mosquitto.org/documentation/>
+- Circular CNMC 3/2020, utilizada como referencia funcional para periodos tarifarios TD: <https://www.cnmc.es/>
 - Código fuente del repositorio `joellmar/wattpath-app`.
 
 ## 8. Anexos técnicos

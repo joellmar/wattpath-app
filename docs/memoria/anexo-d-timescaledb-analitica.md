@@ -89,7 +89,7 @@ Entidad: `Device`.
 | Columna | Descripción |
 |---|---|
 | `id` | Identificador interno. |
-| `user_id` | Usuario propietario. Puede ser nulo en dispositivos auto-provisionados desde MQTT. |
+| `user_id` | Usuario propietario. Puede ser nulo en dispositivos todavía no reclamados; la ingesta MQTT física actual funciona correctamente cuando el Shelly ya existe como dispositivo registrado o sembrado. |
 | `name` | Nombre visible. |
 | `mac_address` | MAC única del dispositivo. |
 | `is_on` | Estado actual. |

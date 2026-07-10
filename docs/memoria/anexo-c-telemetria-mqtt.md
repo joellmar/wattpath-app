@@ -141,7 +141,7 @@ Flujo:
 3. `TelemetryBroadcaster.broadcast(...)` emite al frontend.
 4. `AlertService.checkPowerThreshold(reading)` comprueba maxímetro.
 
-En esta rama, la MAC se extrae del campo `src`. Si el dispositivo no existe, `ReadingService` lo auto-provisiona con nombre `Nuevo Enchufe {mac}` y sin usuario asociado.
+En esta rama, `EventsRpcMapper` extrae la MAC del campo `src`, pero solo la conserva si encuentra un dispositivo existente en `DeviceRepository`. Por tanto, para el Shelly físico el dispositivo debe estar creado previamente, por ejemplo mediante seed o reclamación desde la interfaz. Si no existe, el código actual no puede reconstruir correctamente la MAC original al llegar a `ReadingService`.
 
 ### Rama `STATUS`
 
@@ -162,7 +162,7 @@ La entidad persistida contiene:
 | Campo | Origen MQTT |
 |---|---|
 | `time` | `params.ts` en `EventsRpc` o `Instant.now()` en `Status`. |
-| `device` | MAC extraída del payload/topic. |
+| `device` | Dispositivo existente localizado por `src` en `EventsRpc` o por topic en `Status`. |
 | `powerW` | `apower`. |
 | `energyTotalKwh` | `aenergy.total / 1000`, porque Shelly envía Wh. |
 | `isOn` | Solo disponible de forma fiable en `Status.output`. |
@@ -287,6 +287,6 @@ Esta convergencia es una decisión acertada: el dashboard y las alertas no neces
 
 - La suscripción MQTT está fijada a `shellyplugsg3-9070694d3590/#`.
 - El canal interno es síncrono (`DirectChannel`), sin cola ni procesamiento paralelo.
-- La rama `EVENTS` no informa de `isOn`; la rama `STATUS` sí.
+- La rama `EVENTS` no informa de `isOn` y depende de que la MAC ya exista como dispositivo; la rama `STATUS` sí aporta `output`.
 - El broker usa puerto 1883 sin TLS.
 - El frontend todavía no consume alertas en tiempo real.
