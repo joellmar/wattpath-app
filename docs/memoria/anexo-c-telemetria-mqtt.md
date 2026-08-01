@@ -73,7 +73,7 @@ public record EventsRpc(
 
 public record Params(
     @JsonProperty("ts") Double timestamp,
-    @JsonProperty("switch:0") Switch switch0
+    @JsonProperty("switch:0") Switch switchData
 ) {}
 
 public record Switch(
@@ -104,7 +104,7 @@ public record Status(
 
 | Mapper | Archivo | Conversión |
 | --- | --- | --- |
-| `EventsRpcMapper` | `mappers/EventsRpcMapper.java` | Convierte timestamp Shelly a `Instant`, extrae MAC desde `src` y transforma Wh a kWh. |
+| `EventsRpcMapper` | `mappers/EventsRpcMapper.java` | Convierte timestamp Shelly a `Instant`, busca el dispositivo existente a partir de `src` y transforma Wh a kWh. |
 | `StatusMapper` | `mappers/StatusMapper.java` | Convierte `output` a `isOn` y energía acumulada a kWh. |
 | `ReadingResponseMapper` | `mappers/ReadingResponseMapper.java` | Convierte entidad `Reading` a DTO REST/STOMP. |
 
@@ -131,12 +131,13 @@ Flujo:
 
 1. Recibe `EventsRpc`.
 2. `ReadingService.saveEntity(EventsRpc)` crea la entidad `Reading`.
-3. Si la MAC no existe, crea un `Device` sin usuario con nombre `"Nuevo Enchufe <mac>"`.
-4. Guarda la lectura.
-5. Publica la lectura a Angular por STOMP.
-6. Evalúa alerta de potencia.
+3. `EventsRpcMapper` intenta resolver la MAC del campo `src` contra `DeviceRepository`.
+4. Si el dispositivo ya existe, la lectura se asocia a ese dispositivo.
+5. Guarda la lectura.
+6. Publica la lectura a Angular por STOMP.
+7. Evalúa alerta de potencia.
 
-El auto-registro en esta rama no asigna propietario. El usuario debe reclamar el dispositivo después si quiere verlo en su cuenta.
+En esta rama no se debe asumir un alta normal de dispositivos desconocidos. El mapper solo conserva la MAC cuando ya existe un `Device` con esa dirección; si no existe, devuelve `null` y `ReadingService` acaba usando cadena vacía como MAC de respaldo. Por eso, para un Shelly físico de demo, lo correcto es tener el dispositivo previamente sembrado o reclamado.
 
 ### 6.2. Rama `statusChannel`
 
@@ -177,6 +178,9 @@ Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/services/Rea
 
 ```java
 Reading reading = eventsRpcMapper.toEntity(dto);
+String macAddress = (reading.getDevice() == null || reading.getDevice().getMacAddress() == null)
+    ? ""
+    : reading.getDevice().getMacAddress();
 Device managedDevice = deviceRepository.findByMacAddress(macAddress)
     .orElseGet(() -> {
         Device newDevice = new Device();
@@ -189,7 +193,7 @@ reading.setDevice(managedDevice);
 return readingRepository.save(reading);
 ```
 
-La intención es no perder telemetría aunque el dispositivo aún no haya sido dado de alta manualmente. La consecuencia es que puede existir un dispositivo sin `user_id`, pendiente de reclamación.
+La intención del código es no romper la persistencia si falta el dispositivo, pero la implementación actual no extrae la MAC directamente del DTO en `ReadingService`. La MAC solo llega si `EventsRpcMapper.mapSourceToDevice()` encontró un dispositivo existente. Esta diferencia es importante para operación: la ingesta física fiable requiere que el Shelly exista antes en `devices`.
 
 ### 7.2. Estado de interruptor
 
@@ -280,7 +284,7 @@ Esto se añadió para que la demo no dependa de tener un enchufe físico activo 
 - Solo hay MQTT inbound; no hay comandos outbound activos hacia el enchufe.
 - El topic físico está hardcoded a `shellyplugsg3-9070694d3590/#`.
 - La extracción de MAC desde topic depende del formato exacto del nombre Shelly.
-- `events/rpc` puede crear dispositivos sin usuario, lo que exige reclamación posterior.
+- `events/rpc` no crea de forma fiable un dispositivo reclamable con su MAC si no existe previamente; el mapper necesita encontrarlo antes.
 - `status/switch:0` necesita que la MAC exista previamente; si no existe, `DeviceService.findByMacAddress` lanzará error.
 
 ## 12. Posibles mejoras
