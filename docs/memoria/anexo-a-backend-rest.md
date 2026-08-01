@@ -38,7 +38,7 @@ Reglas específicas:
 
 ### 3.1. `AuthController`
 
-Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/AuthController.java`  
+Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/AuthController.java`
 Base path: `/api/v1/auth`
 
 | Método | Endpoint | Entrada | Salida | Intención |
@@ -69,7 +69,7 @@ El registro admin no depende de un usuario logueado, pero sí de una clave priva
 
 ### 3.2. `DeviceController`
 
-Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/DeviceController.java`  
+Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/DeviceController.java`
 Base path: `/api/v1/devices`
 
 | Método | Endpoint | Parámetros | Entrada | Salida | Control de propiedad |
@@ -106,7 +106,7 @@ La ruta recomendada para usuarios normales es `/claim` o `/simulated`, porque el
 
 ### 3.3. `ReadingController`
 
-Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/ReadingController.java`  
+Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/ReadingController.java`
 Base path: `/api/v1/readings`
 
 | Método | Endpoint | Parámetros | Salida | Uso |
@@ -133,7 +133,7 @@ Los endpoints que aceptan `macAddress` verifican que el dispositivo pertenezca a
 
 ### 3.4. `ConsumptionController`
 
-Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/ConsumptionController.java`  
+Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/ConsumptionController.java`
 Base path: `/api/v1/analytics`
 
 | Método | Endpoint | Query params | Salida |
@@ -150,7 +150,7 @@ Lógica usada:
 
 ### 3.5. `AlertController`
 
-Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/AlertController.java`  
+Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/AlertController.java`
 Base path: `/api/v1/alerts`
 
 | Método | Endpoint | Parámetros | Salida |
@@ -175,7 +175,7 @@ La alerta principal que genera el código actual es `OVERPOWER`, creada cuando l
 
 ### 3.6. `TariffController`
 
-Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/TariffController.java`  
+Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/TariffController.java`
 Base path: `/api/v1/tariffs`
 
 | Método | Endpoint | Entrada | Salida | Rol |
@@ -213,7 +213,7 @@ El endpoint de actualización usa `POST /{id}` en lugar de `PUT`. Angular lo res
 
 ### 3.7. `UserTariffController`
 
-Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/UserTariffController.java`  
+Archivo: `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/UserTariffController.java`
 Base path: `/api/v1/users/me/tariff`
 
 | Método | Endpoint | Entrada | Salida | Intención |
