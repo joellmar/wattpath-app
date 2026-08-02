@@ -273,7 +273,7 @@ Controlador:
 backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/ConsumptionController.java
 ```
 
-### 6.1. Coste por periodo
+### 6.1. Coste por periodo: `calculateCostInPeriod`
 
 Endpoint:
 
@@ -313,7 +313,7 @@ coste = deltaKwh * priceKwh
 
 Este planteamiento aprovecha que Shelly envia energia acumulada como odometro. No se calcula energia integrando potencia, sino usando el incremento real de energia acumulada.
 
-### 6.2. Consumo fantasma
+### 6.2. Consumo fantasma: `calculateGhostCost`
 
 Endpoint:
 
