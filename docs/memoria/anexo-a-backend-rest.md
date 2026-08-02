@@ -196,10 +196,10 @@ public record CreateSimulatedDeviceRequest(
 
 El controlador separa dos casos:
 
-- **Dispositivo fisico:** llega por MQTT o se reclama manualmente mediante MAC.
+- **Dispositivo fisico:** se registra o reclama manualmente mediante MAC, y despues puede recibir lecturas por MQTT.
 - **Dispositivo simulado:** se crea desde la UI para generar lecturas de demo.
 
-El metodo mas importante es `claim`, porque soluciona un caso real del sistema: un dispositivo puede aparecer primero en la base de datos por telemetria MQTT sin estar asociado a ningun usuario. Despues, el usuario lo reclama desde el frontend y el backend comprueba que no pertenezca a otra cuenta.
+El metodo mas importante es `claim`, porque concentra la asignacion de propietario. Si la MAC no existe, el servicio crea el dispositivo para el usuario autenticado; si existe sin propietario o pertenece al mismo usuario, lo vincula o actualiza; y si pertenece a otra cuenta, lo rechaza. Esta ruta es mas fiable para alta de hardware que depender de que la ingesta MQTT cree correctamente la fila `devices`.
 
 ---
 

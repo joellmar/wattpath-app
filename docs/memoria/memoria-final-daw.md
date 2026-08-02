@@ -288,10 +288,10 @@ docker compose up -d --build
 Despues de que Hibernate cree las tablas, se ejecutan los scripts SQL necesarios para TimescaleDB y semillas:
 
 ```bash
-docker compose exec timescaledb psql -U postgres -d wattimizer_db \
-  -f /ruta/backend/src/main/resources/db/dev-seed/00-extensions.sql
-docker compose exec timescaledb psql -U postgres -d wattimizer_db \
-  -f /ruta/backend/src/main/resources/db/dev-seed/01-hypertable.sql
+docker compose exec -T timescaledb psql -U postgres -d wattimizer_db \
+  < backend/src/main/resources/db/dev-seed/00-extensions.sql
+docker compose exec -T timescaledb psql -U postgres -d wattimizer_db \
+  < backend/src/main/resources/db/dev-seed/01-hypertable.sql
 ```
 
 En produccion el documento mas completo esta en `docs/deployment/hetzner-production.md`.
@@ -336,7 +336,7 @@ El MVP queda cubierto a nivel funcional: autenticacion, gestion de dispositivos,
 ### 6.2. Dificultades encontradas
 
 - **Integracion MQTT con datos heterogeneos:** los topics `events/rpc` y `status/switch:0` no aportan exactamente la misma informacion. La solucion fue separar el mapeo por tipo de mensaje.
-- **Propiedad de dispositivos:** un dispositivo puede existir sin usuario tras entrar por MQTT. Por eso se implementa la reclamacion posterior por MAC.
+- **Propiedad de dispositivos:** la MAC debe quedar asociada al usuario correcto antes de explotar sus lecturas. Por eso se implementa la reclamacion por MAC en la API, evitando depender de altas implicitas desde MQTT.
 - **Coste regulatorio:** el calculo no podia usar una tarifa fija simple; necesita resolver periodo por calendario, zona y tipo de peaje.
 - **Dashboard multi-dispositivo:** al cambiar de MAC habia que evitar mezclar historicos. Se resolvio guardando las lecturas por MAC en `TelemetryStore.historicalReadings`.
 - **Demo sin hardware:** se anadieron simuladores con perfiles de consumo para mantener datos en tiempo real aun sin Shelly fisico.

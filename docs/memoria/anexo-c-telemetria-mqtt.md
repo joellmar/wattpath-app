@@ -216,15 +216,14 @@ backend/src/main/java/com/joselumartos/jwtauthbackenddemo/mappers/EventsRpcMappe
 Flujo:
 
 1. Se transforma el JSON en `EventsRpc`.
-2. Se extrae la MAC desde `src`, tomando la parte final del identificador Shelly.
+2. `EventsRpcMapper` intenta resolver el dispositivo a partir de `src`, tomando la parte final del identificador Shelly y buscandola en `DeviceRepository`.
 3. `params.ts` se convierte a `Instant`.
 4. `apower` se guarda como `powerW`.
 5. `aenergy.total` se divide entre 1000 para pasar de Wh a kWh.
 6. `isOn` se ignora porque este mensaje no se usa como fuente del estado del rele.
-7. `ReadingService.saveEntity()` busca el dispositivo por MAC.
-8. Si no existe, crea un dispositivo sin usuario asociado.
+7. `ReadingService.saveEntity()` persiste la lectura asociada al dispositivo resuelto.
 
-Esta ruta auto-registra dispositivos. Es util porque el hardware puede empezar a publicar antes de que el usuario lo reclame desde la UI.
+En el codigo actual, si la MAC del `src` no existe en `devices`, el mapper devuelve `null` y `ReadingService` cae en una ruta de alta con MAC vacia. Por tanto, para que `events/rpc` conserve correctamente la MAC real, el dispositivo debe existir previamente en la base de datos, por ejemplo mediante semilla de desarrollo o mediante el flujo de reclamacion/registro desde la API.
 
 ### 5.2. Ruta `status/switch:0`
 
@@ -244,7 +243,7 @@ Flujo:
 6. `apower` se guarda como `powerW`.
 7. `aenergy.total` se convierte de Wh a kWh.
 
-A diferencia de `events/rpc`, esta ruta no auto-crea dispositivos. Por eso, para que los mensajes de estado funcionen de forma estable, el dispositivo debe estar sembrado o haber sido creado previamente por otro mensaje.
+Igual que en el caso anterior, para que los mensajes de estado funcionen de forma estable, el dispositivo debe estar sembrado, reclamado o registrado previamente.
 
 ---
 
@@ -289,18 +288,9 @@ sequenceDiagram
 
 ---
 
-## 7. Dispositivos sin propietario y reclamacion
+## 7. Registro y reclamacion de dispositivos
 
-Cuando entra un mensaje `events/rpc` de una MAC no conocida, `ReadingService` crea un `Device` con:
-
-- nombre tipo `Nuevo Enchufe {mac}`;
-- `macAddress` detectada;
-- `isOn = true`;
-- `user = null`.
-
-Al no haber usuario autenticado en el flujo MQTT, la auditoria puede registrar `created_by = "SYSTEM"`.
-
-Despues, un usuario puede reclamarlo desde:
+El flujo funcional fiable para asociar un enchufe a un usuario es el endpoint:
 
 ```text
 POST /api/v1/devices/claim
@@ -308,11 +298,12 @@ POST /api/v1/devices/claim
 
 Reglas de reclamacion:
 
-- Si el dispositivo no tiene usuario, se asigna al usuario autenticado.
+- Si la MAC no existe, se crea el dispositivo y se asigna al usuario autenticado.
+- Si el dispositivo existe y no tiene usuario, se asigna al usuario autenticado.
 - Si pertenece al mismo usuario, se permite actualizar nombre.
 - Si pertenece a otro usuario real, se rechaza.
 
-Esta decision separa correctamente dos momentos: llegada tecnica del hardware y asignacion funcional al propietario.
+La ingesta MQTT, tal como esta implementada, trabaja mejor cuando la fila `devices` ya existe. Por eso, para alta real de hardware, la ruta recomendable es registrar o reclamar la MAC desde la API antes de depender de los topics MQTT. El script de desarrollo `04-seed-device-shelly.sql` sigue esa idea sembrando el Shelly conocido.
 
 ---
 
@@ -347,7 +338,7 @@ La simulacion usa perfiles como horno, lavadora, television, ventilador, PC, fri
 | Topic Shelly hardcodeado | Solo se escucha un dispositivo fisico concreto | Subscripcion dinamica o topic wildcard por tenant |
 | MQTT sin TLS en `1883` | Trafico en claro entre hardware y broker | TLS `8883` o VPN |
 | Sin flujo MQTT saliente | No se envian comandos reales al enchufe desde backend | Implementar `MqttPahoMessageHandler` para publish |
-| `status/switch:0` no auto-provisiona | Falla si no existe fila `devices` | Unificar comportamiento de resolucion de dispositivo |
+| Resolucion de MAC no provisionada | `events/rpc` no conserva bien la MAC si no existe el dispositivo, y `status/switch:0` falla si no hay fila previa | Extraer la MAC del payload/topic antes de crear el dispositivo o exigir registro previo de forma explicita |
 | Sin `errorChannel` especifico | Errores de integracion no tienen cola de recuperacion | Definir canal de errores y logging operativo |
 | HiveMQ en dependencias pero no usado | Dependencia sin uso en `src/main` | Retirar o integrar si se migra cliente MQTT |
 

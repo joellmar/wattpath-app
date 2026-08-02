@@ -243,6 +243,15 @@ La decision importante aqui es guardar el historico por MAC. Antes de esta separ
 | `deleteDevice` | `DELETE /api/v1/devices/{id}` | Elimina dispositivo y reajusta MAC seleccionada |
 | `connectTelemetry` | WebSocket STOMP | Escucha lecturas de la MAC activa |
 
+#### Helpers expuestos
+
+Ademas de los `rxMethod`, el store expone dos funciones sincronas usadas por el dashboard:
+
+| Metodo | Uso |
+| --- | --- |
+| `setSelectedMac(mac)` | Cambia la MAC activa y dispara la carga de historico reciente |
+| `loadRecentReadings(mac)` | Consulta `GET /api/v1/readings/device/{mac}/recent?seconds=120` y rellena `historicalReadings[mac]` |
+
 #### Flujo WebSocket
 
 El flujo mas importante es `connectTelemetry`:

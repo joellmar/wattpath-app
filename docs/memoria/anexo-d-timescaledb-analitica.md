@@ -81,7 +81,7 @@ backend/src/main/java/com/joselumartos/jwtauthbackenddemo/entities/Device.java
 | Columna | Tipo aproximado | Descripcion |
 | --- | --- | --- |
 | `id` | `bigint` | PK |
-| `user_id` | FK nullable a `users` | Propietario; puede ser `NULL` si llega por MQTT antes de reclamar |
+| `user_id` | FK nullable a `users` | Propietario; puede quedar `NULL` en filas sembradas o tecnicas, aunque el alta funcional recomendada usa `claim` para asignarlo |
 | `name` | `varchar`, no nulo | Nombre visible |
 | `mac_address` | `varchar`, unico, no nulo | Identificador fisico o simulado |
 | `is_on` | `boolean` | Estado del rele |
