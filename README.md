@@ -14,10 +14,13 @@ Wattimizer resuelve el problema de la opacidad energética en las pymes. A trav�
 
 ## 📋 Estado del Proyecto
 * [x] Fase 1: Análisis Funcional (Historias de Usuario y Backlog)
-* [x] Fase 2: Diseño Técnico (Arquitectura, E/R, Wireframes)
+* [x] Fase 2: Diseño Técnico (Arquitectura y E/R)
 * [x] Fase 3: Desarrollo Backend
 * [x] Fase 4: Desarrollo Frontend
 * [x] Fase 5: Despliegue (Deploy)
+
+## 📚 Documentación técnica
+* [Memoria técnica DAW](docs/memoria/memoria-tecnica-wattimizer.md): anexo en español con análisis funcional, diseño técnico, API REST, frontend Angular, ingesta MQTT, TimescaleDB, pruebas y despliegue.
 
 ## 👨‍💻 Autor
 * **José Luis López Martos** - Desarrollador Full-Stack
