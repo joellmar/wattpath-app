@@ -33,7 +33,7 @@ backend/src/main/resources/db/prod/99-resync-sequences.sql
 
 ```mermaid
 erDiagram
-    users ||--o| tariffs : "tariff_id"
+    users }o--o| tariffs : "tariff_id"
     users ||--o{ devices : "user_id"
     users ||--o{ alerts : "user_id"
     users ||--o{ federated_identities : "user_id"

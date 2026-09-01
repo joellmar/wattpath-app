@@ -127,7 +127,7 @@ Modelo resumido:
 
 ```mermaid
 erDiagram
-    users ||--o| tariffs : "tariff_id"
+    users }o--o| tariffs : "tariff_id"
     users ||--o{ devices : "user_id"
     users ||--o{ alerts : "user_id"
     tariffs ||--|{ periods : "tariff_id"
@@ -136,6 +136,10 @@ erDiagram
     devices ||--o{ alerts : "device_id"
     users ||--o{ federated_identities : "user_id"
 ```
+
+La relación usuario-tarifa es opcional desde `users.tariff_id`: varios usuarios
+pueden apuntar a una misma plantilla o a contratos privados clonados desde el
+catálogo.
 
 El detalle de tablas, claves, restricciones e hypertable está documentado en
 [`anexo-d-timescaledb-analitica.md`](./anexo-d-timescaledb-analitica.md).
@@ -319,7 +323,7 @@ Orden recomendado para preparar la base:
 
 ```sql
 -- 1. Activar extensión TimescaleDB
-\i backend/src/main/resources/db/00-extensions.sql
+\i backend/src/main/resources/db/dev-seed/00-extensions.sql
 
 -- 2. Convertir readings en hypertable antes de cargar telemetría
 \i backend/src/main/resources/db/dev-seed/01-hypertable.sql
@@ -336,11 +340,11 @@ El despliegue de producción está descrito en
 La URL configurada en el `docker-compose.yml` es `https://wattimizer.com`, con
 callback OAuth2 en `/auth/oauth/callback`.
 
-Nginx es la única puerta pública. El backend y el frontend solo son accesibles
-dentro de la red Docker `iot_net`. Mosquitto expone el puerto 1883 para el
-Shelly físico; el propio `docker-compose.yml` lo marca como deuda de seguridad
-por ir en texto plano, recomendando TLS/8883 o VPN cuando el hardware lo
-permita.
+Nginx es la única entrada pública HTTP/HTTPS. El backend y el frontend solo son
+accesibles dentro de la red Docker `iot_net`. Mosquitto también expone MQTT en
+el puerto 1883 para el Shelly físico; el propio `docker-compose.yml` lo marca
+como deuda de seguridad por ir en texto plano, recomendando TLS/8883, VPN o
+filtrado de red cuando el hardware y la infraestructura lo permitan.
 
 ## 6. Conclusiones y líneas futuras
 
@@ -385,8 +389,10 @@ físico conectado.
 - Documentación de NgRx Signals: <https://ngrx.io/guide/signals>
 - Documentación de RxJS: <https://rxjs.dev/>
 - Documentación de TimescaleDB: <https://docs.timescale.com/>
-- Circular CNMC 3/2020 usada como referencia para periodos tarifarios.
-- Documentación técnica del dispositivo Shelly Plug S Gen3.
+- Circular CNMC 3/2020 usada como referencia para periodos tarifarios:
+  <https://www.boe.es/eli/es/cir/2020/01/15/3>
+- Documentación técnica del dispositivo Shelly Plug S Gen3:
+  <https://kb.shelly.cloud/knowledge-base/shelly-plug-s-gen3>
 
 ## 8. Anexos técnicos
 

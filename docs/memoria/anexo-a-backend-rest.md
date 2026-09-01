@@ -88,13 +88,13 @@ de Wattimizer.
 | Método | Endpoint | Parámetros | Entrada | Salida | Intención |
 | --- | --- | --- | --- | --- | --- |
 | `GET` | `/` | `Principal` | Ninguna | `List<DeviceDto>` | Lista solo los dispositivos del usuario autenticado. |
-| `GET` | `/{id}` | `id`, `Principal` | Ninguna | `DeviceDto` o 403 sin cuerpo | Consulta un dispositivo si pertenece al usuario. |
+| `GET` | `/{id}` | `id`, `Principal` | Ninguna | `DeviceDto`, 403 sin cuerpo o 404 | Consulta un dispositivo si pertenece al usuario. |
 | `POST` | `/` | Ninguno | `DeviceDto` | `DeviceDto` con HTTP 201 | Alta directa de dispositivo; es un endpoint más permisivo que `/claim`. |
 | `POST` | `/claim` | `Principal` | `DeviceDto` con `macAddress` y `name` | `DeviceDto` | Vincula o registra una MAC física para el usuario actual. |
 | `POST` | `/simulated/demo-pack` | `Principal` | Ninguna | `List<DeviceDto>` con HTTP 201 | Crea un simulador por perfil que el usuario aún no tenga. |
 | `POST` | `/simulated` | `Principal` | `CreateSimulatedDeviceRequest` | `DeviceDto` con HTTP 201 | Crea un dispositivo virtual con MAC generada. |
 | `PUT` | `/{id}` | `id`, `Principal` | `DeviceDto` | `DeviceDto` | Edita nombre, estado y perfil si es simulado. |
-| `DELETE` | `/{id}` | `id`, `Principal` | Ninguna | HTTP 204 o 403 sin cuerpo | Elimina dispositivo, lecturas y alertas asociadas. |
+| `DELETE` | `/{id}` | `id`, `Principal` | Ninguna | HTTP 204, 403 sin cuerpo o 404 | Elimina dispositivo, lecturas y alertas asociadas. |
 
 ### DTOs
 
@@ -147,10 +147,10 @@ DESKTOP_PC, FRIDGE, STANDBY, CONSTANT_HIGH_LOAD
 | Método | Endpoint | Parámetros | Entrada | Salida |
 | --- | --- | --- | --- | --- |
 | `GET` | `/` | `Principal` | Ninguna | `List<ReadingResponse>` del usuario |
-| `GET` | `/latest/{macAddress}` | `macAddress`, `Principal` | Ninguna | Última `ReadingResponse` o 403 |
-| `GET` | `/device/{macAddress}/recent` | `macAddress`, query `seconds` con valor por defecto 120 | Ninguna | Lista reciente ordenada por tiempo |
-| `GET` | `/search` | query `time` ISO-8601, `macAddress`, `Principal` | Ninguna | Lectura por clave compuesta |
-| `DELETE` | `/search` | query `time` ISO-8601, `macAddress`, `Principal` | Ninguna | HTTP 204 |
+| `GET` | `/latest/{macAddress}` | `macAddress`, `Principal` | Ninguna | Última `ReadingResponse`, 403 o 404 |
+| `GET` | `/device/{macAddress}/recent` | `macAddress`, query `seconds` con valor por defecto 120 | Ninguna | Lista reciente, 403 o 404 si la MAC no existe |
+| `GET` | `/search` | query `time` ISO-8601, `macAddress`, `Principal` | Ninguna | Lectura por clave compuesta, 403 o 404 |
+| `DELETE` | `/search` | query `time` ISO-8601, `macAddress`, `Principal` | Ninguna | HTTP 204, 403 o 404 |
 
 ### DTO de salida
 
