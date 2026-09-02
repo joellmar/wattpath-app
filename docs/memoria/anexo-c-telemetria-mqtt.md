@@ -199,11 +199,13 @@ Tras guardar una lectura, el backend usa `TelemetryBroadcaster` para enviarla a:
 
 Angular se suscribe desde `WebsocketService.watchReadings(macAddress)` y el `TelemetryStore` la anade al historial del dispositivo seleccionado. Asi el navegador recibe datos nuevos sin hacer polling.
 
-Las alertas se envian por:
+El backend tambien publica alertas por:
 
 ```text
 /topic/alerts/{username}
 ```
+
+En el frontend actual no hay metodo equivalente a `watchAlerts`; `AlertsComponent` consulta y borra alertas por REST. Por tanto, el canal STOMP de alertas queda disponible desde backend, pero la vista implementada no lo consume todavia.
 
 ## 9. Alertas de maximetro
 
@@ -342,7 +344,7 @@ flowchart TB
     Processor --> AlertService
     AlertService --> Alerts
     AlertService --> Broadcaster
-    Broadcaster -->|STOMP| Store
+    Broadcaster -->|STOMP lecturas| Store
     Store --> Dashboard
 ```
 

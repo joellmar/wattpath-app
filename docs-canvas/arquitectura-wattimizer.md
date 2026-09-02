@@ -25,7 +25,7 @@ flowchart LR
 | Estado cliente | NgRx Signal Store + RxJS | Dispositivos, lecturas, tarifas y flujos HTTP/WebSocket. |
 | API | Spring Boot REST | Controladores, DTOs, servicios, seguridad y errores. |
 | Ingesta | Spring Integration MQTT | Suscripcion al broker y conversion de JSON Shelly. |
-| Tiempo real | STOMP | Empuja lecturas y alertas al navegador. |
+| Tiempo real | STOMP | Empuja lecturas al dashboard; el backend publica tambien alertas, pero la pantalla actual de alertas las carga por REST. |
 | Datos | PostgreSQL + TimescaleDB | Modelo relacional y serie temporal de lecturas. |
 | Deploy | Docker Compose + Nginx + GitHub Actions | Ejecucion en Hetzner y publicacion automatica desde `main`. |
 
@@ -88,7 +88,7 @@ sequenceDiagram
     Reading->>Angular: STOMP /topic/readings/{mac}
     Handler->>Alert: Comprueba potencia contratada
     Sim->>Alert: Comprueba potencia contratada
-    Alert->>Angular: STOMP /topic/alerts/{username}
+    Alert-->>Angular: Canal STOMP publicado; consumo actual de la vista por REST
 ```
 
 ## 5. Modelo de datos

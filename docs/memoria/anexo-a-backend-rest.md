@@ -297,7 +297,7 @@ El consumo fantasma usa la misma base, pero filtra por hora local 00:00-05:59.
 |---|---|---|
 | WebSocket STOMP | `/ws-iot` | Endpoint de handshake para Angular. |
 | Broker STOMP | `/topic/readings/{macAddress}` | Lecturas en tiempo real. |
-| Broker STOMP | `/topic/alerts/{username}` | Alertas de maximetro. |
+| Broker STOMP | `/topic/alerts/{username}` | Alertas de maximetro publicadas por backend; la vista Angular actual las consulta por REST. |
 | OAuth2 | `/oauth2/authorization/{provider}` | Inicio del login social. |
 | OAuth2 callback | `/login/oauth2/code/{provider}` | Callback gestionado por Spring Security. |
 

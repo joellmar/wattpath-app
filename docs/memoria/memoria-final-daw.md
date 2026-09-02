@@ -91,7 +91,7 @@ Desarrollar una aplicacion web full-stack que permita registrar dispositivos ele
 | HU-01 | Como usuario, quiero registrarme e iniciar sesion para acceder a mi panel privado. | El backend crea usuarios `ROLE_USER`; el login devuelve JWT; Angular guarda el token y protege rutas privadas. | MVP |
 | HU-02 | Como administrador, quiero crear plantillas de tarifas para que los usuarios puedan asignarselas. | Solo `ROLE_ADMIN` puede crear, editar y borrar tarifas; se validan periodos y potencias antes de guardar. | MVP |
 | HU-03 | Como usuario, quiero asignarme una tarifa del catalogo para activar calculos de coste. | `POST /api/v1/users/me/tariff` clona la plantilla; la plantilla original no se modifica. | MVP |
-| HU-04 | Como usuario, quiero registrar un Shelly fisico por MAC para ver sus datos. | La MAC debe tener 12 caracteres hexadecimales; si el dispositivo no existe se crea y queda asociado al usuario autenticado. | MVP |
+| HU-04 | Como usuario, quiero registrar un Shelly fisico por MAC para ver sus datos. | El formulario Angular exige 12 caracteres hexadecimales; si el dispositivo no existe, el backend lo crea y lo asocia al usuario autenticado. | MVP |
 | HU-05 | Como usuario, quiero ver lecturas en tiempo real para saber el consumo actual. | El dashboard carga historial reciente por REST y despues recibe nuevas lecturas por STOMP en `/topic/readings/{mac}`. | MVP |
 | HU-06 | Como usuario, quiero conocer el coste diario y el consumo fantasma. | Las metricas se calculan solo si existe tarifa; el consumo fantasma se limita a 00:00-05:59 hora local del contrato. | MVP |
 | HU-07 | Como usuario, quiero recibir alertas si supero la potencia contratada. | Cada lectura se compara con la potencia contratada del periodo aplicable y genera una alerta `OVERPOWER`. | MVP |
@@ -157,7 +157,7 @@ La clave de `readings` es compuesta: `time` + `device_id`. Esta decision evita d
 | Backend | Java 26, Spring Boot 4.0.5, Spring Security, JPA, MapStruct | API REST, autenticacion, reglas de negocio, mapeo DTO-entidad y gestion de errores. |
 | Ingesta IoT | Spring Integration MQTT + Eclipse Paho | Suscripcion al broker Mosquitto, ruteo de mensajes Shelly y persistencia asincrona. |
 | Base de datos | PostgreSQL + TimescaleDB | Persistencia relacional y almacenamiento eficiente de lecturas temporales. |
-| Tiempo real | STOMP WebSocket | Envio de lecturas y alertas del backend al navegador. |
+| Tiempo real | STOMP WebSocket | Envio de lecturas al dashboard; el backend tambien publica alertas por STOMP, aunque la vista actual de alertas las consulta por REST. |
 | Despliegue | Docker Compose, Nginx, GitHub Actions, Hetzner | Orquestacion de servicios, HTTPS, proxy inverso y CI/CD. |
 
 ```mermaid
