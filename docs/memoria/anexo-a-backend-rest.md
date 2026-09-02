@@ -39,7 +39,7 @@ Las operaciones de escritura sobre tarifas del catalogo solo aceptan `ROLE_ADMIN
 
 ### 3.1. `AuthController`
 
-**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/AuthController.java`  
+**Archivo:** `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/controllers/AuthController.java`
 **Ruta base:** `/api/v1/auth`
 
 | Metodo | Endpoint | Entrada | Salida | Logica |
@@ -62,7 +62,7 @@ La decision importante es que Angular no trabaja directamente con la sesion OAut
 
 ### 3.2. `DeviceController`
 
-**Archivo:** `controllers/DeviceController.java`  
+**Archivo:** `controllers/DeviceController.java`
 **Ruta base:** `/api/v1/devices`
 
 | Metodo | Endpoint | Parametros | Entrada | Salida | Servicio |
@@ -103,7 +103,7 @@ El flujo recomendado para usuarios es `claim` o `simulated`, porque en ambos cas
 
 ### 3.3. `ReadingController`
 
-**Archivo:** `controllers/ReadingController.java`  
+**Archivo:** `controllers/ReadingController.java`
 **Ruta base:** `/api/v1/readings`
 
 | Metodo | Endpoint | Parametros | Salida |
@@ -130,7 +130,7 @@ Todos los endpoints que reciben una MAC verifican primero que el dispositivo per
 
 ### 3.4. `ConsumptionController`
 
-**Archivo:** `controllers/ConsumptionController.java`  
+**Archivo:** `controllers/ConsumptionController.java`
 **Ruta base:** `/api/v1/analytics`
 
 | Metodo | Endpoint | Query params | Salida |
@@ -149,7 +149,7 @@ Authorization: Bearer <jwt>
 
 ### 3.5. `TariffController`
 
-**Archivo:** `controllers/TariffController.java`  
+**Archivo:** `controllers/TariffController.java`
 **Ruta base:** `/api/v1/tariffs`
 
 | Metodo | Endpoint | Entrada | Salida | Seguridad |
@@ -179,7 +179,7 @@ public record TariffDto(
 
 ### 3.6. `UserTariffController`
 
-**Archivo:** `controllers/UserTariffController.java`  
+**Archivo:** `controllers/UserTariffController.java`
 **Ruta base:** `/api/v1/users/me/tariff`
 
 | Metodo | Endpoint | Entrada | Salida |
@@ -207,7 +207,7 @@ Modos soportados por el servicio:
 
 ### 3.7. `AlertController`
 
-**Archivo:** `controllers/AlertController.java`  
+**Archivo:** `controllers/AlertController.java`
 **Ruta base:** `/api/v1/alerts`
 
 | Metodo | Endpoint | Parametros | Salida |

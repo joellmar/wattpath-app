@@ -37,7 +37,7 @@ Esta separacion existe porque Hibernate crea estructura relacional, pero no sabe
 
 ### 3.1. `users`
 
-Entidad: `UserEntity`  
+Entidad: `UserEntity`
 Tabla: `users`
 
 | Campo | Funcion |
@@ -67,7 +67,7 @@ Los dispositivos auto-creados desde `events/rpc` pueden quedar sin usuario hasta
 
 ### 3.3. `readings`
 
-Entidad: `Reading`  
+Entidad: `Reading`
 Hypertable TimescaleDB por columna `time`.
 
 | Campo | Tipo conceptual | Funcion |
