@@ -258,7 +258,8 @@ El handler convierte errores frecuentes a códigos HTTP comprensibles:
 |---|---|
 | `EntityNotFoundException` | `404` |
 | `UsernameNotFoundException` | `401` |
-| `IllegalArgumentException` | `400` |
+| `IllegalStateException` de reglas de negocio | `400` |
+| `IllegalArgumentException` sin handler específico | `500` genérico |
 | `ForbiddenException` | `403` |
 | Duplicado de email o usuario | `400` |
 | Conflicto de clave foránea al borrar dispositivos con lecturas/alertas | `409` |
