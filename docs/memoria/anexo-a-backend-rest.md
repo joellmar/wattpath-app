@@ -2,9 +2,9 @@
 
 ## 1. Proposito del backend
 
-El backend de Wattimizer actua como capa central entre la interfaz Angular, la base de datos TimescaleDB y la telemetria MQTT. Esta desarrollado con **Spring Boot 4.0.5** y **Java 26**, usando Spring Web MVC para REST, Spring Security para autenticacion, Spring Data JPA para persistencia y MapStruct para transformar entidades en DTOs.
+El backend de Wattimizer actua como capa central entre la interfaz Angular, la base de datos TimescaleDB y la telemetría MQTT. Esta desarrollado con **Spring Boot 4.0.5** y **Java 26**, usando Spring Web MVC para REST, Spring Security para autenticación, Spring Data JPA para persistencia y MapStruct para transformar entidades en DTOs.
 
-La aplicacion principal esta en:
+La aplicación principal esta en:
 
 ```java
 // backend/src/main/java/com/joselumartos/jwtauthbackenddemo/JwtAuthBackendDemoApplication.java
@@ -17,7 +17,7 @@ public class JwtAuthBackendDemoApplication {
 }
 ```
 
-La decision de separar controladores, servicios, repositorios, entidades y DTOs permite que cada capa tenga una responsabilidad clara. El controlador no calcula costes ni toca directamente MQTT; solo recibe la peticion, valida lo minimo y delega.
+La decisión de separar controladores, servicios, repositorios, entidades y DTOs permite que cada capa tenga una responsabilidad clara. El controlador no calcula costes ni toca directamente MQTT; solo recibe la peticion, válida lo mínimo y delega.
 
 ## 2. Seguridad general de la API
 
@@ -29,7 +29,7 @@ La seguridad esta definida en `SecurityConfig`.
 | Token | JWT enviado en `Authorization: Bearer <token>`. |
 | Filtro | `JwtValidatorFilter`, insertado antes de `BasicAuthenticationFilter`. |
 | CORS | Origenes desde `app.cors.allowed-origins` o `APP_CORS_ALLOWED_ORIGINS`. |
-| Rutas publicas | Login, registro, registro admin, canje OAuth2, rutas OAuth2 y `/ws-iot/**`. |
+| Rutas públicas | Login, registro, registro admin, canje OAuth2, rutas OAuth2 y `/ws-iot/**`. |
 | Rutas autenticadas | El resto de `/api/v1/**`. |
 | Administracion | Mutaciones de `/api/v1/tariffs/**` requieren `ROLE_ADMIN`. |
 
@@ -44,10 +44,10 @@ Las comprobaciones de propiedad de datos se hacen en los controladores y servici
 
 | Metodo | Endpoint | Entrada | Salida | Intencion |
 |---|---|---|---|---|
-| `POST` | `/login` | `LoginUser` | `LoginUserJwt` | Autentica email/contrasena y devuelve JWT. |
-| `POST` | `/register` | `RegisterRequest` | `204 No Content` | Registra un usuario normal. |
-| `POST` | `/register/admin` | `RegisterRequest` + header `X-Wattimizer-Admin-Secret` | `204 No Content` o `403` | Permite crear admin solo si la clave coincide con `app.admin.secret`. |
-| `POST` | `/oauth/exchange` | `OAuthTicketExchangeRequest` | `LoginUserJwt` | Canjea un ticket temporal de OAuth2 por un JWT propio de la aplicacion. |
+| `POST` | `/login` | `LoginUser` | `LoginUserJwt` | Autentica email/contraseña y devuelve JWT. |
+| `POST` | `/register` | `RegisterRequest` | `201 Created` sin cuerpo | Registra un usuario normal. |
+| `POST` | `/register/admin` | `RegisterRequest` + header `X-Wattimizer-Admin-Secret` | `201 Created` sin cuerpo o `403` | Permite crear admin solo si la clave coincide con `app.admin.secret`. |
+| `POST` | `/oauth/exchange` | `OAuthTicketExchangeRequest` | `LoginUserJwt` | Canjea un ticket temporal de OAuth2 por un JWT propio de la aplicación. |
 
 #### DTOs
 
@@ -66,7 +66,7 @@ public record RegisterRequest(
 public record OAuthTicketExchangeRequest(String ticket) {}
 ```
 
-La validacion de registro vive en `AuthRegistrationService`: email obligatorio con formato valido, contrasena minima de 6 caracteres y confirmacion coincidente. No se usan anotaciones Bean Validation en estos DTOs; la regla esta programada en servicio.
+La validación de registro vive en `AuthRegistrationService`: email obligatorio con formato válido, contraseña mínima de 6 caracteres y confirmación coincidente. No se usan anotaciones Bean Validation en estos DTOs; la regla esta programada en servicio.
 
 ### 3.2. `DeviceController`
 
@@ -103,7 +103,7 @@ public record CreateSimulatedDeviceRequest(
 ) {}
 ```
 
-Los perfiles de simulacion disponibles son:
+Los perfiles de simulación disponibles son:
 
 ```java
 public enum SimulationProfile {
@@ -158,7 +158,7 @@ El campo `time` viaja como `Instant` en Java y se serializa en JSON como fecha I
 | `GET` | `/cost` | `macAddress`, `start`, `end` | `Map<String,Object>` con `totalCostEur` | Calcula coste total del periodo consultado. |
 | `GET` | `/ghost-consumption` | `macAddress`, `start`, `end` | `Map<String,Object>` con `ghostCostEur` | Calcula coste en ventana nocturna 00:00-05:59. |
 
-Ambos endpoints verifican antes que la MAC pertenezca al usuario. El calculo no se basa en sumar potencias instantaneas, sino en deltas positivos de `energyTotalKwh`; asi se aprovecha el odometro acumulado del Shelly y se evitan errores si una lectura aislada llega con potencia nula.
+Ambos endpoints verifican antes que la MAC pertenezca al usuario. El calculo no se basa en sumar potencias instantaneas, sino en deltas positivos de `energyTotalKwh`; así se aprovecha el odometro acumulado del Shelly y se evitan errores si una lectura aislada llega con potencia nula.
 
 ### 3.5. `TariffController`
 
@@ -196,7 +196,7 @@ public record TariffContractedPowerDto(
 ) {}
 ```
 
-`TariffService` valida codigos de peaje (`2.0TD`, `3.0TD`, `6.1TD`, `6.2TD`), zonas geograficas, periodos P1-P6, precios positivos y potencias contratadas.
+`TariffService` válida códigos de peaje (`2.0TD`, `3.0TD`, `6.1TD`, `6.2TD`), zonas geograficas, periodos P1-P6, precios positivos y potencias contratadas.
 
 ### 3.6. `UserTariffController`
 
@@ -216,7 +216,7 @@ public record UserTariffRequest(
 ) {}
 ```
 
-El diseno evita IDOR porque el usuario no envia su propio identificador: el backend toma la identidad desde `Principal`.
+El diseño evita IDOR porque el usuario no envia su propio identificador: el backend toma la identidad desde `Principal`.
 
 ### 3.7. `AlertController`
 
@@ -252,7 +252,7 @@ public record ErrorResponse(
 ) {}
 ```
 
-El handler convierte errores frecuentes a codigos HTTP comprensibles:
+El handler convierte errores frecuentes a códigos HTTP comprensibles:
 
 | Error | Codigo |
 |---|---|
@@ -260,7 +260,8 @@ El handler convierte errores frecuentes a codigos HTTP comprensibles:
 | `UsernameNotFoundException` | `401` |
 | `IllegalArgumentException` | `400` |
 | `ForbiddenException` | `403` |
-| Colision de email o usuario | `409` |
+| Duplicado de email o usuario | `400` |
+| Conflicto de clave foránea al borrar dispositivos con lecturas/alertas | `409` |
 | Error no controlado | `500` |
 
 La ventaja de este enfoque es que Angular puede mostrar mensajes uniformes sin tener que interpretar excepciones internas de Java.
@@ -286,10 +287,10 @@ sequenceDiagram
     API-->>UI: JSON
 ```
 
-## 6. Observaciones tecnicas importantes
+## 6. Observaciones técnicas importantes
 
 - `POST /api/v1/devices` esta activo y persiste el `username` recibido en el body. Para uso normal del producto es preferible `/claim` o `/simulated`, porque toman el propietario desde el JWT.
-- No hay Bean Validation (`@NotNull`, `@Valid`) en los DTOs de entrada; la validacion se realiza en servicios.
+- No hay Bean Validation (`@NotNull`, `@Valid`) en los DTOs de entrada; la validación se realiza en servicios.
 - `ReadingService.listByUsername()` filtra en memoria tras `findAll()`. Funciona para MVP, pero con muchas lecturas convendria mover ese filtro a una consulta por usuario.
 - Los tickets OAuth2 se guardan en memoria (`ConcurrentHashMap`) y duran 60 segundos. Si se escala el backend a varias instancias, habria que moverlos a Redis o una tabla temporal.
 - Los controladores `DeviceCommandController`, `DeviceStateController` y `ReactiveDeviceStateController` estan comentados, por lo que no forman parte de la API activa.

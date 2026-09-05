@@ -2,7 +2,7 @@
 
 ## 1. Vista general
 
-Este canvas resume visualmente la arquitectura documentada en la memoria tecnica. Sirve como apoyo para explicar el proyecto en la defensa o como anexo grafico.
+Este canvas resume visualmente la arquitectura documentada en la memoria técnica. Sirve como apoyo para explicar el proyecto en la defensa o como anexo grafico.
 
 ```mermaid
 flowchart LR
@@ -17,7 +17,7 @@ flowchart LR
     Nginx --> Spring
 ```
 
-## 2. Flujo de autenticacion
+## 2. Flujo de autenticación
 
 ```mermaid
 sequenceDiagram
@@ -35,7 +35,7 @@ sequenceDiagram
     UI->>UI: Guarda auth_token en sessionStorage
 ```
 
-## 3. Flujo de telemetria real
+## 3. Flujo de telemetría real
 
 ```mermaid
 sequenceDiagram
@@ -115,7 +115,7 @@ erDiagram
     }
 ```
 
-## 6. Mapa rapido de anexos
+## 6. Mapa rápido de anexos
 
 | Tema | Documento |
 |---|---|
@@ -123,4 +123,4 @@ erDiagram
 | REST Spring Boot | `docs/memoria/anexo-a-backend-rest.md` |
 | Angular, RxJS y NgRx Signals | `docs/memoria/anexo-b-frontend-angular.md` |
 | MQTT y WebSocket | `docs/memoria/anexo-c-telemetria-mqtt.md` |
-| TimescaleDB y analitica | `docs/memoria/anexo-d-timescaledb-analitica.md` |
+| TimescaleDB y analítica | `docs/memoria/anexo-d-timescaledb-analitica.md` |

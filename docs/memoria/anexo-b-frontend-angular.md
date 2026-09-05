@@ -2,9 +2,9 @@
 
 ## 1. Proposito del frontend
 
-El frontend de Wattimizer es una SPA desarrollada con **Angular 21**, componentes standalone y lazy loading por rutas. Su funcion es convertir los datos energeticos del backend en una experiencia clara: login, gestion de dispositivos, configuracion de tarifas, visualizacion de consumo y revision de alertas.
+El frontend de Wattimizer es una SPA desarrollada con **Angular 21**, componentes standalone y lazy loading por rutas. Su funcion es convertir los datos energéticos del backend en una experiencia clara: login, gestión de dispositivos, configuracion de tarifas, visualizacion de consumo y revisión de alertas.
 
-La aplicacion arranca desde `frontend/src/main.ts` con `bootstrapApplication(App, appConfig)`. No usa modulos Angular clasicos para declarar pantallas; cada componente se carga de forma independiente desde `app.routes.ts`.
+La aplicación arranca desde `frontend/src/main.ts` con `bootstrapApplication(App, appConfig)`. No usa modulos Angular clasicos para declarar pantallas; cada componente se carga de forma independiente desde `app.routes.ts`.
 
 ## 2. Tecnologias reales usadas
 
@@ -17,7 +17,7 @@ La aplicacion arranca desde `frontend/src/main.ts` con `bootstrapApplication(App
 | PrimeNG 21 | Componentes UI como tablas, selects, botones y formularios. |
 | Tailwind CSS 4 | Utilidades visuales globales. |
 | Chart.js 4.5 | Grafica de potencia en el dashboard. |
-| `@stomp/rx-stomp` | Cliente STOMP sobre WebSocket para telemetria. |
+| `@stomp/rx-stomp` | Cliente STOMP sobre WebSocket para telemetría. |
 | Biome | Lint/formato frontend. |
 | Vitest | Tests unitarios configurados por Angular build. |
 
@@ -27,9 +27,9 @@ Las rutas estan en `frontend/src/app/app.routes.ts`.
 
 | Ruta | Componente | Proteccion | Funcion |
 |---|---|---|---|
-| `/login` | `LoginComponent` | Publica | Login por credenciales y entrada OAuth2. |
-| `/register` | `RegisterComponent` | Publica | Registro de usuario. |
-| `/auth/oauth/callback` | `OAuthCallbackComponent` | Publica | Canje del ticket OAuth2 por JWT. |
+| `/login` | `LoginComponent` | Pública | Login por credenciales y entrada OAuth2. |
+| `/register` | `RegisterComponent` | Pública | Registro de usuario. |
+| `/auth/oauth/callback` | `OAuthCallbackComponent` | Pública | Canje del ticket OAuth2 por JWT. |
 | `/` | `MainLayoutComponent` | `authGuard` | Shell autenticado con menu lateral. |
 | `/dashboard` | `DashboardComponent` | Hija protegida | Potencia en tiempo real y costes. |
 | `/devices` | `DevicesComponent` | Hija protegida | CRUD de dispositivos fisicos y simulados. |
@@ -45,7 +45,7 @@ Las rutas estan en `frontend/src/app/app.routes.ts`.
 
 **Archivo:** `frontend/src/app/components/login/login.component.ts`
 
-Usa un formulario reactivo con email y contrasena. Al enviar:
+Usa un formulario reactivo con email y contraseña. Al enviar:
 
 1. Llama a `AuthService.authentication()`.
 2. Guarda el JWT con `SessionStorageService.saveToken()`.
@@ -57,7 +57,7 @@ Tambien permite iniciar OAuth2 redirigiendo a `/oauth2/authorization/google` o `
 
 **Archivo:** `frontend/src/app/components/register/register.component.ts`
 
-Registra usuarios con `AuthService.register()`. La validacion de coincidencia de contrasenas se hace en el formulario antes de enviar. Si el backend responde correctamente, navega al login.
+Registra usuarios con `AuthService.register()`. La validación de coincidencia de contraseñas se hace en el formulario antes de enviar. Si el backend responde correctamente, navega al login.
 
 ### 4.3. `OAuthCallbackComponent`
 
@@ -85,18 +85,18 @@ this.session.logout();
 this.router.navigate(["/login"], { replaceUrl: true });
 ```
 
-El orden importa porque primero se corta el flujo WebSocket y despues se eliminan datos cacheados. Asi se evita que otro usuario vea temporalmente informacion de la sesion anterior.
+El orden importa porque primero se corta el flujo WebSocket y despues se eliminan datos cacheados. Asi se evita que otro usuario vea temporalmente información de la sesion anterior.
 
 ### 4.5. `DashboardComponent`
 
 **Archivo:** `frontend/src/app/components/dashboard/dashboard.component.ts`
 
-Es la pantalla mas representativa. Combina:
+Es la pantalla más representativa. Combina:
 
 - `TelemetryStore` para dispositivos, MAC seleccionada y lecturas.
 - `TariffStore` para saber si el usuario tiene tarifa.
-- `HttpClient` directo para analiticas de coste.
-- `computed()` para preparar datos de grafica y textos.
+- `HttpClient` directo para analíticas de coste.
+- `computed()` para preparar datos de gráfica y textos.
 - `effect()` para reaccionar a cambios de dispositivo o tarifa.
 
 Cuando cambia la MAC seleccionada, el componente:
@@ -109,12 +109,12 @@ Cuando cambia la MAC seleccionada, el componente:
 
 **Archivo:** `frontend/src/app/components/devices/devices.component.ts`
 
-Gestiona dispositivos fisicos y simulados. El formulario cambia de validacion segun el tipo:
+Gestiona dispositivos fisicos y simulados. El formulario cambia de validación segun el tipo:
 
 - Fisico: requiere nombre y MAC.
 - Simulado: requiere nombre y `simulationProfile`.
 
-Aunque `TelemetryStore` contiene metodos CRUD, esta pantalla usa varias llamadas HTTP directas y despues refresca el store con `loadDevices()`. Es una decision practica: la pantalla mantiene su logica de formularios local y usa el store como fuente compartida para dashboard y layout.
+Aunque `TelemetryStore` contiene metodos CRUD, esta pantalla usa varias llamadas HTTP directas y despues refresca el store con `loadDevices()`. Es una decisión práctica: la pantalla mantiene su lógica de formularios local y usa el store como fuente compartida para dashboard y layout.
 
 ### 4.7. `TariffComponent`
 
@@ -165,7 +165,7 @@ export interface JwtPayload {
 }
 ```
 
-Sus metodos mas importantes son `saveToken`, `getToken`, `logout`, `isLoggedIn`, `getAuthorities`, `hasRole` y `getUsername`.
+Sus metodos más importantes son `saveToken`, `getToken`, `logout`, `isLoggedIn`, `getAuthorities`, `hasRole` y `getUsername`.
 
 ### 5.3. `TariffService`
 
@@ -193,7 +193,7 @@ Cuando `getMyTariff()` recibe `204 No Content`, transforma la respuesta en `null
 Configura `RxStomp` contra `/ws-iot`. La URL se adapta a HTTP/HTTPS:
 
 - En local con `http`, usa `ws://`.
-- En produccion con `https`, usa `wss://`.
+- En producción con `https`, usa `wss://`.
 
 El metodo principal es:
 
@@ -292,7 +292,7 @@ connectTelemetry: rxMethod<string | null>(
 )
 ```
 
-Se filtran lecturas sin potencia para evitar huecos en la grafica. Tambien se deduplica por timestamp porque el backend puede emitir informacion desde mas de un canal MQTT.
+Se filtran lecturas sin potencia para evitar huecos en la gráfica. Tambien se deduplica por timestamp porque el backend puede emitir información desde más de un canal MQTT.
 
 ### 7.2. `TariffStore`
 
@@ -345,12 +345,12 @@ flowchart TD
     D --> K["REST analitica coste"]
 ```
 
-La experiencia se basa en una regla clara: primero autenticacion, despues tarifa y dispositivos. Si falta tarifa, el dashboard lo comunica porque no puede calcular euros con rigor.
+La experiencia se basa en una regla clara: primero autenticación, despues tarifa y dispositivos. Si falta tarifa, el dashboard lo comunica porque no puede calcular euros con rigor.
 
-## 9. Observaciones tecnicas
+## 9. Observaciones técnicas
 
 - El proyecto usa `@ngrx/signals`, no NgRx Store con reducers/effects clasicos.
 - `DeviceService` existe con `httpResource`, pero actualmente las pantallas usan sobre todo `TelemetryStore` o `HttpClient` directo.
-- El dashboard consulta analiticas con `HttpClient` directo porque son calculos puntuales ligados al dia actual y a la MAC seleccionada.
+- El dashboard consulta analíticas con `HttpClient` directo porque son calculos puntuales ligados al dia actual y a la MAC seleccionada.
 - La limpieza en logout es importante: corta WebSocket y resetea stores antes de cambiar de usuario.
 - El proxy de desarrollo (`frontend/proxy.conf.json`) envia `/api`, `/oauth2` y `/ws-iot` a `http://localhost:8080`, por lo que Angular no necesita conocer la URL real del backend en local.

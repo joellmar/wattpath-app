@@ -1,25 +1,25 @@
-# Anexo C. Ingesta de telemetria MQTT con Spring Integration
+# Anexo C. Ingesta de telemetría MQTT con Spring Integration
 
 ## 1. Objetivo de la ingesta
 
-La ingesta MQTT convierte mensajes publicados por enchufes Shelly en lecturas persistentes dentro de Wattimizer. El flujo conecta el mundo fisico del dispositivo con la parte web: el Shelly publica potencia y energia, el backend lo guarda en TimescaleDB y Angular lo recibe en directo por WebSocket.
+La ingesta MQTT convierte mensajes publicados por enchufes Shelly en lecturas persistentes dentro de Wattimizer. El flujo conecta el mundo físico del dispositivo con la parte web: el Shelly pública potencia y energía, el backend lo guarda en TimescaleDB y Angular lo recibe en directo por WebSocket.
 
 La pieza central esta en `backend/src/main/java/com/joselumartos/jwtauthbackenddemo/config/MqttConfig.java`.
 
 ## 2. Configuracion MQTT
 
-| Elemento | Valor en codigo |
+| Elemento | Valor en código |
 |---|---|
 | Cliente MQTT | `MqttPahoMessageDrivenChannelAdapter` |
 | Client ID | `backend-spring-iot` |
 | Broker | `${mqtt.url}` (`tcp://mosquitto:1883` en Docker) |
-| Usuario/contrasena | `${mqtt.username}` y `${mqtt.password}` |
+| Usuario/contraseña | `${mqtt.username}` y `${mqtt.password}` |
 | QoS | `1` |
 | Reconexion | `automaticReconnect=true` |
 | Sesion | `cleanSession=true` |
 | Topic suscrito | `shellyplugsg3-9070694d3590/#` |
 
-El topic esta fijado a un Shelly concreto. Esto simplifica el MVP porque se conoce de antemano el dispositivo fisico de pruebas, pero limita la escalabilidad: para varios dispositivos reales habria que parametrizar la suscripcion o usar un patron mas general y validar despues la MAC.
+El topic esta fijado a un Shelly concreto. Esto simplifica el MVP porque se conoce de antemano el dispositivo físico de pruebas, pero limita la escalabilidad: para varios dispositivos reales habria que parametrizar la suscripcion o usar un patron más general y validar despues la MAC.
 
 ## 3. Enrutamiento por topic
 
@@ -40,7 +40,7 @@ message -> {
 | `/status/switch:0` | `Status` | `statusChannel` | Estado del interruptor y potencia actual. |
 | Otros | - | `nullChannel` | Mensajes descartados. |
 
-Los mensajes se transforman desde JSON con `Transformers.fromJson(...)`. Asi, cuando llegan al handler, el codigo ya trabaja con records Java en lugar de cadenas JSON.
+Los mensajes se transforman desde JSON con `Transformers.fromJson(...)`. Asi, cuando llegan al handler, el código ya trabaja con records Java en lugar de cadenas JSON.
 
 ## 4. DTOs MQTT
 
@@ -80,7 +80,7 @@ En este formato:
 
 - `output`: indica si el enchufe esta encendido.
 - `apower`: potencia activa.
-- `aenergy.total`: energia acumulada en Wh.
+- `aenergy.total`: energía acumulada en Wh.
 
 Para este topic, la MAC no viene del DTO principal, sino que se extrae del topic:
 
@@ -101,7 +101,7 @@ La entidad final es `Reading`, guardada en la tabla `readings`.
 | `aenergy.total / 1000` | `energyTotalKwh` |
 | `output` en `Status` | `isOn` |
 
-`EventsRpcMapper` y `StatusMapper` hacen la conversion Wh -> kWh para guardar el acumulado en una unidad mas adecuada para calculos de coste.
+`EventsRpcMapper` y `StatusMapper` hacen la conversion Wh -> kWh para guardar el acumulado en una unidad más adecuada para calculos de coste.
 
 Hay una diferencia importante:
 
@@ -141,18 +141,18 @@ public void handleStatus(Message<Status> mqttMessage) {
 El handler hace tres cosas en orden:
 
 1. Persiste la lectura.
-2. Publica la lectura por WebSocket.
+2. Pública la lectura por WebSocket.
 3. Comprueba si hay sobrepotencia y, si procede, crea una alerta.
 
 ## 7. Asincronia real del flujo
 
-Desde el punto de vista de arquitectura, MQTT desacopla el dispositivo fisico del backend: el Shelly publica en Mosquitto y Spring Boot consume cuando el mensaje llega. Sin embargo, dentro de la aplicacion el procesamiento no usa una cola propia ni un pool separado:
+Desde el punto de vista de arquitectura, MQTT desacopla el dispositivo físico del backend: el Shelly pública en Mosquitto y Spring Boot consume cuando el mensaje llega. Sin embargo, dentro de la aplicación el procesamiento no usa una cola propia ni un pool separado:
 
 - `eventsRpcChannel` es `DirectChannel`.
 - `statusChannel` es `DirectChannel`.
 - No hay `ExecutorChannel`, `@Async` ni cola persistente.
 
-Por tanto, el flujo es asincrono respecto al frontend y al dispositivo, pero el handler se ejecuta de forma directa dentro del flujo del adaptador MQTT. Si un handler fuese lento, podria afectar al consumo de mensajes.
+Por tanto, el flujo es asíncrono respecto al frontend y al dispositivo, pero el handler se ejecuta de forma directa dentro del flujo del adaptador MQTT. Si un handler fuese lento, podria afectar al consumo de mensajes.
 
 ## 8. Publicacion en tiempo real
 
@@ -173,9 +173,9 @@ registry.setApplicationDestinationPrefixes("/app");
 
 Angular se suscribe con `RxStomp` desde `WebsocketService.watchReadings(macAddress)`.
 
-## 9. Simulacion de telemetria
+## 9. Simulacion de telemetría
 
-Ademas del Shelly real, Wattimizer incluye telemetria simulada para demostraciones.
+Ademas del Shelly real, Wattimizer incluye telemetría simulada para demostraciones.
 
 | Clase | Funcion |
 |---|---|
@@ -183,7 +183,7 @@ Ademas del Shelly real, Wattimizer incluye telemetria simulada para demostracion
 | `SimulatedTelemetryProcessor` | Calcula potencia, acumula kWh, persiste lectura y lanza broadcast/alertas. |
 | `SimulationProfileRegistry` | Selecciona el calculador segun `SimulationProfile`. |
 
-La simulacion se activa con `simulation.enabled` o `SIMULATION_ENABLED`. En Docker Compose esta en `true` por defecto para permitir una demo sin hardware.
+La simulación se activa con `simulation.enabled` o `SIMULATION_ENABLED`. En Docker Compose esta en `true` por defecto para permitir una demo sin hardware.
 
 `SimulatedTelemetryProcessor` usa `@Transactional(propagation = Propagation.REQUIRES_NEW)`. Esto significa que cada dispositivo simulado se procesa en su propia transaccion. Si falla uno, el resto del tick puede seguir generando lecturas.
 
@@ -211,7 +211,7 @@ sequenceDiagram
 
 ## 11. Riesgos y mejoras detectadas
 
-- El topic MQTT esta atado a una MAC concreta: funciona para el dispositivo de pruebas, pero no para alta dinamica de muchos Shelly.
+- El topic MQTT esta atado a una MAC concreta: funciona para el dispositivo de pruebas, pero no para alta dinámica de muchos Shelly.
 - Mosquitto expone `1883`, que no cifra el trafico. El propio `docker-compose.yml` lo marca como deuda de seguridad.
 - Los canales son directos; si aumenta el volumen, convendria introducir `ExecutorChannel`, cola o procesamiento por lotes.
 - El alta automatica desde `events/rpc` no conserva correctamente la MAC cuando el dispositivo no existe, por lo que conviene registrar/reclamar dispositivos antes de confiar en ese topic.

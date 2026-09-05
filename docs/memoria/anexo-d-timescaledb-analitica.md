@@ -1,10 +1,10 @@
-# Anexo D. TimescaleDB y analitica energetica
+# Anexo D. TimescaleDB y analítica energética
 
 ## 1. Papel de la base de datos
 
 Wattimizer usa PostgreSQL como base relacional y TimescaleDB para optimizar la tabla de lecturas temporales. La mayor parte del modelo es relacional clasico: usuarios, dispositivos, tarifas, periodos y alertas. La excepcion importante es `readings`, porque recibe datos cada pocos segundos desde MQTT o desde simuladores.
 
-La aplicacion no usa Flyway ni Liquibase. El esquema base lo crea Hibernate con `spring.jpa.hibernate.ddl-auto=update` y despues se ejecutan scripts SQL manuales para activar extensiones, convertir `readings` en hypertable y anadir constraints especificos.
+La aplicación no usa Flyway ni Liquibase. El esquema base lo crea Hibernate con `spring.jpa.hibernate.ddl-auto=update` y despues se ejecutan scripts SQL manuales para activar extensiones, convertir `readings` en hypertable y anadir constraints especificos.
 
 ## 2. Orden de inicializacion SQL
 
@@ -43,7 +43,7 @@ Entidad: `UserEntity`
 | Columna | Tipo Java | Comentario |
 |---|---|---|
 | `id` | `Long` | Heredado de `BaseEntity`. |
-| `username` | `String` | Email/login, unico y obligatorio. |
+| `username` | `String` | Email/login, único y obligatorio. |
 | `password` | `String` | Hash BCrypt. |
 | `role` | `Role` | `ROLE_USER` o `ROLE_ADMIN`. |
 | `active` | `boolean` | Control de cuenta habilitada. |
@@ -60,7 +60,7 @@ Entidad: `Device`
 | `name` | `String` | Nombre visible del medidor. |
 | `mac_address` | `String` | Unico y obligatorio. |
 | `is_on` | `Boolean` | Estado del dispositivo. |
-| `is_simulated` | `Boolean` | Indica si genera telemetria desde el backend. |
+| `is_simulated` | `Boolean` | Indica si genera telemetría desde el backend. |
 | `simulation_profile` | `SimulationProfile` | Perfil de consumo simulado. |
 
 ### 3.3. `readings`
@@ -107,7 +107,7 @@ Entidad: `Period`
 | `period_code` | `String` | P1-P6. |
 | `price_kwh` | `BigDecimal(10,6)` | Precio contractual por kWh. |
 
-Indice unico:
+Índice único:
 
 ```sql
 CREATE UNIQUE INDEX IF NOT EXISTS ux_periods_tariff_period_code
@@ -125,7 +125,7 @@ Entidad: `TariffContractedPower`
 | `period_code` | `String` | P1-P6. |
 | `contracted_power_kw` | `BigDecimal(10,2)` | Potencia contratada por periodo. |
 
-El orden creciente de potencias se valida en servicio, no con un `CHECK` por fila.
+El orden creciente de potencias se válida en servicio, no con un `CHECK` por fila.
 
 ### 3.7. `tariff_calendar_slots`
 
@@ -136,14 +136,14 @@ Esta tabla es una dimension regulatoria global. No pertenece a ningun usuario ni
 | Columna | Funcion |
 |---|---|
 | `access_tariff_code` | Distingue `2.0TD`, `3.0TD`, `6.1TD`, `6.2TD`. |
-| `geographic_zone` | Zona geografica espanola. |
+| `geographic_zone` | Zona geografica española. |
 | `month_number` | Mes 1-12. |
 | `season_code` | Temporada: `HIGH`, `MID_HIGH`, `MID`, `LOW`. |
 | `day_type` | Tipo de dia: `A`, `B`, `B1`, `C`, `D`. |
 | `period_code` | Periodo resultante P1-P6. |
 | `start_time`, `end_time` | Intervalo horario local. |
 
-El indice principal de busqueda es:
+El índice principal de busqueda es:
 
 ```sql
 CREATE UNIQUE INDEX IF NOT EXISTS ux_tariff_calendar_slots_lookup
@@ -168,7 +168,7 @@ Entidad: `Alert`
 
 Entidad: `FederatedIdentity`
 
-Vincula cuentas externas con usuarios locales. Tiene un constraint unico sobre `(provider, provider_subject)` para evitar duplicados cuando el usuario entra con Google o GitHub.
+Vincula cuentas externas con usuarios locales. Tiene un constraint único sobre `(provider, provider_subject)` para evitar duplicados cuando el usuario entra con Google o GitHub.
 
 ## 4. Consultas sobre lecturas
 
@@ -208,7 +208,7 @@ int deleteAllByDeviceMacAddress(...);
 
 ## 5. Analitica de coste
 
-La analitica actual esta en `ConsumptionService`. No usa `time_bucket`, continuous aggregates ni funciones especificas de TimescaleDB. TimescaleDB aporta particionado temporal, pero el calculo se hace en Java.
+La analítica actual esta en `ConsumptionService`. No usa `time_bucket`, continuous aggregates ni funciones especificas de TimescaleDB. TimescaleDB aporta particionado temporal, pero el calculo se hace en Java.
 
 ### 5.1. Coste total
 
@@ -261,7 +261,7 @@ kWh = (powerW / 1000) * (durationSeconds / 3600)
 coste = kWh * priceKwh
 ```
 
-Este metodo es util para estimaciones por muestra, aunque los endpoints de analitica actuales usan principalmente deltas del acumulado `energyTotalKwh`.
+Este metodo es util para estimaciones por muestra, aunque los endpoints de analítica actuales usan principalmente deltas del acumulado `energyTotalKwh`.
 
 ## 6. Resolucion del periodo tarifario
 
@@ -294,7 +294,7 @@ Optional<String> findPeriodCode(...);
 
 La semantica normal es intervalo semiabierto `[startTime, endTime)`. La excepcion `startTime = endTime` se reserva para dias `D` que representan dia completo.
 
-## 7. Endpoints que consumen analitica
+## 7. Endpoints que consumen analítica
 
 | Endpoint | Parametros | Servicio |
 |---|---|---|
@@ -316,7 +316,7 @@ Actualmente no hay en el repositorio:
 - politicas de retencion
 - vistas materializadas de consumo diario
 
-Esto no impide que el MVP funcione, pero marca una mejora clara. El siguiente paso natural seria mover parte de la analitica a SQL, por ejemplo:
+Esto no impide que el MVP funcione, pero marca una mejora clara. El siguiente paso natural seria mover parte de la analítica a SQL, por ejemplo:
 
 ```sql
 SELECT time_bucket('15 minutes', time) AS bucket,
@@ -334,15 +334,15 @@ Este ejemplo no esta implementado en el backend actual; se incluye como linea fu
 
 ## 9. Consideraciones de integridad
 
-- `devices.mac_address` es unico, asi se evita registrar dos veces el mismo medidor.
+- `devices.mac_address` es único, así se evita registrar dos veces el mismo medidor.
 - `periods` tiene unicidad por `(tariff_id, period_code)`.
 - `tariff_contracted_powers` tiene unicidad por `(tariff_id, period_code)`.
 - `tariff_calendar_slots` usa checks para peaje, zona, mes, temporada, tipo de dia y periodo.
-- Al borrar un dispositivo, `DeviceService.deleteById` elimina antes lecturas y alertas para evitar errores de clave foranea.
+- Al borrar un dispositivo, `DeviceService.deleteById` elimina antes lecturas y alertas para evitar errores de clave foránea.
 
 ## 10. Riesgos y mejoras
 
-- `spring.jpa.hibernate.ddl-auto=update` es comodo para desarrollo, pero en produccion seria mas controlable usar migraciones versionadas.
+- `spring.jpa.hibernate.ddl-auto=update` es comodo para desarrollo, pero en producción seria más controlable usar migraciones versionadas.
 - `ReadingService.listByUsername()` filtra en memoria; deberia moverse a una consulta por usuario si la tabla crece.
-- Las consultas analiticas cargan lecturas completas en Java; TimescaleDB permitiria agregaciones por tramo temporal mucho mas eficientes.
-- La cobertura de calendario seed esta centrada en `2.0TD` y `3.0TD` para `PENINSULA` e `ISLAS_BALEARES`; otros codigos/zonas estan contemplados por constraints y entidades, pero necesitan datos completos para calcular correctamente.
+- Las consultas analíticas cargan lecturas completas en Java; TimescaleDB permitiria agregaciones por tramo temporal mucho más eficientes.
+- La cobertura de calendario seed esta centrada en `2.0TD` y `3.0TD` para `PENINSULA` e `ISLAS_BALEARES`; otros códigos/zonas estan contemplados por constraints y entidades, pero necesitan datos completos para calcular correctamente.
