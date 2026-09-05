@@ -19,5 +19,16 @@ Wattimizer resuelve el problema de la opacidad energética en las pymes. A trav�
 * [x] Fase 4: Desarrollo Frontend
 * [x] Fase 5: Despliegue (Deploy)
 
+## 📚 Documentación técnica DAW
+
+La memoria técnica y sus anexos están preparados en Markdown para poder usarse directamente como material de entrega del proyecto:
+
+* [Memoria final DAW](docs/memoria/memoria-final-daw.md)
+* [Anexo A — Backend REST Spring Boot](docs/memoria/anexo-a-backend-rest.md)
+* [Anexo B — Frontend Angular, RxJS y NgRx Signals](docs/memoria/anexo-b-frontend-angular.md)
+* [Anexo C — Telemetría MQTT](docs/memoria/anexo-c-telemetria-mqtt.md)
+* [Anexo D — TimescaleDB y analítica](docs/memoria/anexo-d-timescaledb-analitica.md)
+* [Canvas documental de arquitectura](docs-canvas/arquitectura-wattimizer.md)
+
 ## 👨‍💻 Autor
 * **José Luis López Martos** - Desarrollador Full-Stack
