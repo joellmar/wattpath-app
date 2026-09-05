@@ -254,15 +254,17 @@ public record ErrorResponse(
 
 El handler convierte errores frecuentes a códigos HTTP comprensibles:
 
-| Error | Codigo |
+| Error | Código |
 |---|---|
 | `EntityNotFoundException` | `404` |
+| `BadCredentialsException` | `401` |
 | `UsernameNotFoundException` | `401` |
 | `IllegalStateException` de reglas de negocio | `400` |
 | `IllegalArgumentException` sin handler específico | `500` genérico |
 | `ForbiddenException` | `403` |
 | Duplicado de email o usuario | `400` |
 | Conflicto de clave foránea al borrar dispositivos con lecturas/alertas | `409` |
+| `DataIntegrityViolationException` no reconocida por el handler | `500` |
 | Error no controlado | `500` |
 
 La ventaja de este enfoque es que Angular puede mostrar mensajes uniformes sin tener que interpretar excepciones internas de Java.
