@@ -153,7 +153,7 @@ sequenceDiagram
     Handler->>Alert: checkPowerThreshold(reading)
 ```
 
-En esta rama, si el dispositivo no existe, `ReadingService.saveEntity(EventsRpc)` crea un `Device` nuevo con nombre `Nuevo Enchufe <mac>` y sin usuario asignado. Eso permite no perder telemetria aunque el usuario todavia no haya reclamado el enchufe.
+En esta rama hay que matizar el alta automatica. `EventsRpcMapper` solo asocia el dispositivo si la MAC extraida de `src` ya existe en `devices`. Si no existe, el `ReadingService` no recibe una MAC util desde el mapper y puede crear un registro auxiliar sin MAC practica. Por eso, para que la telemetria Shelly quede correctamente asociada, el dispositivo debe estar registrado o reclamado antes por su MAC.
 
 ### Rama `status/switch:0`
 
@@ -171,7 +171,7 @@ En esta rama el dispositivo debe existir, porque `deviceService.findByMacAddress
 
 | Metodo | Entrada | Uso |
 |---|---|---|
-| `saveEntity(EventsRpc dto)` | Payload Shelly RPC | Telemetria MQTT con posible autoalta de dispositivo. |
+| `saveEntity(EventsRpc dto)` | Payload Shelly RPC | Telemetria MQTT; conserva la MAC solo si el dispositivo ya existe. |
 | `saveEntity(DeviceDto deviceDto, Status dto)` | Dispositivo conocido + payload status | Telemetria MQTT de estado. |
 | `saveSimulatedReading(...)` | Datos ya calculados | Job de simulacion. |
 
@@ -325,7 +325,7 @@ flowchart LR
 - **MQTT y simulacion convergen en `ReadingService`**, por lo que dashboard, analitica y alertas no tienen que distinguir si una lectura viene de hardware o de demo.
 - **STOMP evita polling constante** para la grafica. REST se mantiene para cargar el historico inicial.
 - **Transaccion por simulador** evita que un perfil defectuoso deje sin lecturas a todos los demas.
-- **Autoalta parcial en `events/rpc`** permite capturar dispositivos antes de que un usuario los reclame.
+- **Asociacion previa en `events/rpc`**: el mapper localiza el dispositivo por la MAC del `src`; si no existe, el flujo actual no conserva una MAC util para que el usuario lo reclame despues.
 
 ## 13. Limitaciones actuales
 

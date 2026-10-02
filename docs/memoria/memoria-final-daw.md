@@ -73,7 +73,7 @@ Desarrollar una plataforma web capaz de registrar telemetria electrica en tiempo
 ### 2.3. Gestion del trabajo
 
 - **Repositorio:** <https://github.com/joellmar/wattpath-app>
-- **Rama documentada:** `main` en el estado actual de la automatizacion.
+- **Codigo revisado:** repositorio Wattimizer en el estado actual del proyecto.
 - **Kanban propuesto para la memoria:** Backlog, Por hacer, En progreso, En revision y Hecho.
 
 No se incluye una captura inventada del tablero. Para la entrega final se recomienda anadir una captura real de GitHub Projects o del tablero utilizado durante el desarrollo.
