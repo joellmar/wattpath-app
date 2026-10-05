@@ -7,10 +7,21 @@ Proyecto desarrollado para el módulo de Proyecto Intermodular del ciclo de Desa
 Wattimizer resuelve el problema de la opacidad energética en las pymes. A través de la monitorización IoT (enchufes inteligentes), la plataforma traduce el consumo eléctrico (kWh) en gasto económico real (€) aplicando las tarifas actuales (ej. 3.0TD), alertando de picos de potencia y consumos fantasma.
 
 ## 🛠️ Stack Tecnológico
-* **Frontend:** Angular 21.0.0 (TypeScript)
+* **Frontend:** Angular 21.x (TypeScript)
 * **Backend:** Spring Boot 4.0.5 (Java)
 * **Base de Datos:** PostgreSQL + TimescaleDB (Series Temporales)
 * **IoT / Mensajería:** MQTT (Eclipse Mosquitto)
+
+## 📚 Documentación técnica
+
+La memoria técnica en español para DAW está disponible en:
+
+* [`docs/memoria/memoria-final-daw.md`](docs/memoria/memoria-final-daw.md)
+* [`docs/memoria/anexo-a-backend-rest.md`](docs/memoria/anexo-a-backend-rest.md)
+* [`docs/memoria/anexo-b-frontend-angular.md`](docs/memoria/anexo-b-frontend-angular.md)
+* [`docs/memoria/anexo-c-telemetria-mqtt.md`](docs/memoria/anexo-c-telemetria-mqtt.md)
+* [`docs/memoria/anexo-d-timescaledb-analitica.md`](docs/memoria/anexo-d-timescaledb-analitica.md)
+* [`docs-canvas/arquitectura-wattimizer.md`](docs-canvas/arquitectura-wattimizer.md)
 
 ## 📋 Estado del Proyecto
 * [x] Fase 1: Análisis Funcional (Historias de Usuario y Backlog)
